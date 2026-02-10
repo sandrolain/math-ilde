@@ -305,6 +305,17 @@ export class OptionsControlComponent {
         case 1000:
           return 'Livello 4: Divisioni avanzate';
       }
+    } else if (section === 'decomposition') {
+      switch (level) {
+        case 10:
+          return 'Livello 1: fino a 10';
+        case 50:
+          return 'Livello 2: fino a 50';
+        case 100:
+          return 'Livello 3: fino a 100';
+        case 1000:
+          return 'Livello 4: fino a 1000';
+      }
     }
 
     return `Livello ${level}`;

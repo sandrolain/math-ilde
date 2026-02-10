@@ -8,7 +8,7 @@ import type { MathOperation, VisualElement, ShapeType } from '../../types/exerci
     <div class="flex flex-wrap items-center justify-center gap-4 md:gap-6 p-6 min-h-[200px]">
       @for (group of groupedElements(); track group.groupIndex) {
         <div
-          class="flex flex-wrap items-center justify-center gap-2 p-4 rounded-2xl border-3 md:min-h-24 min-w-12 min-h-20"
+          [class]="getGroupClasses()"
           style="border-color: var(--color-primary); background-color: rgba(255, 255, 255, 0.5);"
         >
           @for (element of group.elements; track element.index) {
@@ -66,9 +66,11 @@ import type { MathOperation, VisualElement, ShapeType } from '../../types/exerci
 })
 export class VisualRepresentationComponent {
   operation = input.required<MathOperation>();
+  displayMode = input<'grouped' | 'total'>('grouped');
 
   // Computed per l'operatore grafico (moltiplicazioni mostrano somma, divisioni nulla)
   visualOperator = computed(() => {
+    if (this.displayMode() === 'total') return '';
     const op = this.operation();
     // La moltiplicazione graficamente è una somma di gruppi uguali
     if (op.operator === '×') return '+';
@@ -81,6 +83,15 @@ export class VisualRepresentationComponent {
   groupedElements = computed(() => {
     const op = this.operation();
     const groups: { groupIndex: number; elements: VisualElement[] }[] = [];
+
+    // Modalità 'total': mostra solo il risultato totale in un unico gruppo
+    if (this.displayMode() === 'total') {
+      groups.push({
+        groupIndex: 0,
+        elements: this.createElements(op.result, 'circle', '#A8D8EA', 0, 0),
+      });
+      return groups;
+    }
 
     if (op.operator === '+') {
       // Addizione: gruppi separati per ogni addendo
@@ -218,6 +229,15 @@ export class VisualRepresentationComponent {
     }
 
     return `${baseClasses} ${sizeClass} ${shapeClass}`;
+  }
+
+  getGroupClasses(): string {
+    if (this.displayMode() === 'total') {
+      // Modalità total: griglia con max 10 colonne
+      return 'grid grid-cols-10 gap-2 p-4';
+    }
+    // Modalità grouped: layout flessibile con bordo
+    return 'flex flex-wrap items-center justify-center gap-2 p-4 rounded-2xl border-3 md:min-h-24 min-w-12 min-h-20';
   }
 
   private getElementSize(): string {

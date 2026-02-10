@@ -73,32 +73,31 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
               }
 
               <!-- Input e verifica -->
-              @if (!showFeedback()) {
-                <div class="max-w-md mx-auto space-y-6">
-                  <div>
-                    <label for="answer-input" class="field-label"> Qual è il risultato? </label>
-                    <input
-                      #answerInput
-                      id="answer-input"
-                      type="number"
-                      inputmode="numeric"
-                      [(ngModel)]="userAnswerStr"
-                      (keyup.enter)="verifyAnswer()"
-                      [class]="getInputClasses()"
-                      placeholder="?"
-                      aria-label="Inserisci il risultato dell'operazione"
-                    />
-                  </div>
 
-                  <button
-                    (click)="verifyAnswer()"
-                    class="btn btn-primary w-full"
-                    aria-label="Verifica la tua risposta"
-                  >
-                    Verifica la risposta
-                  </button>
+              <div class="max-w-md mx-auto space-y-6">
+                <div>
+                  <label for="answer-input" class="field-label"> Qual è il risultato? </label>
+                  <input
+                    #answerInput
+                    id="answer-input"
+                    type="number"
+                    inputmode="numeric"
+                    [(ngModel)]="userAnswerStr"
+                    (keyup.enter)="verifyAnswer()"
+                    [class]="getInputClasses()"
+                    placeholder="?"
+                    aria-label="Inserisci il risultato dell'operazione"
+                  />
                 </div>
-              }
+
+                <button
+                  (click)="verifyAnswer()"
+                  class="btn btn-primary w-full"
+                  aria-label="Verifica la tua risposta"
+                >
+                  Verifica la risposta
+                </button>
+              </div>
 
               <!-- Feedback -->
               <app-feedback

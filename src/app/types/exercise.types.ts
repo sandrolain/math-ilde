@@ -1,10 +1,16 @@
 // Math-ilde Type Definitions
 
-export type OperationType = 'addition' | 'subtraction' | 'multiplication' | 'division' | 'mixed';
+export type OperationType =
+  | 'addition'
+  | 'subtraction'
+  | 'multiplication'
+  | 'division'
+  | 'mixed'
+  | 'decomposition';
 export type OperatorSymbol = '+' | '-' | '×' | '÷';
 export type DifficultyLevel = 10 | 50 | 100 | 1000;
 export type NumberOfOperands = 2 | 3;
-export type SectionType = 'addition-subtraction' | 'multiplication' | 'division';
+export type SectionType = 'addition-subtraction' | 'multiplication' | 'division' | 'decomposition';
 export type FeedbackType = 'success' | 'retry' | 'show-answer';
 export type ShapeType = 'circle' | 'square' | 'star';
 

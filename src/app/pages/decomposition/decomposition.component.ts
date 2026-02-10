@@ -19,7 +19,7 @@ import { FeedbackService } from '../../services/feedback.service';
 import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/exercise.types';
 
 @Component({
-  selector: 'app-division',
+  selector: 'app-decomposition',
   imports: [
     FormsModule,
     HeaderComponent,
@@ -30,14 +30,14 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-app">
-      <app-header [title]="'Divisioni'" />
+      <app-header [title]="'Scomposizione della Somma'" />
 
       <div class="container-main">
         <div class="layout-exercise">
           <!-- Sidebar opzioni -->
           <aside class="sidebar">
             <app-options-control
-              [section]="'division'"
+              [section]="'decomposition'"
               [operationType]="exerciseOptions().operationType"
               [level]="exerciseOptions().level"
               [numberOfOperands]="exerciseOptions().numberOfOperands"
@@ -61,33 +61,64 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
                   </button>
                 </div>
                 <div class="operation-display">
-                  {{ formatOperation() }}
+                  <div class="flex items-center justify-center gap-4">
+                    <span class="text-6xl">?</span>
+                    <span class="text-6xl">+</span>
+                    <span class="text-6xl">?</span>
+                    <span class="text-6xl">=</span>
+                    <span class="text-6xl font-bold">{{ currentOperation().result }}</span>
+                  </div>
                 </div>
               </div>
 
               <!-- Rappresentazione visuale -->
               @if (exerciseOptions().showVisuals) {
                 <div class="my-8">
-                  <app-visual-representation [operation]="currentOperation()" />
+                  <app-visual-representation
+                    [operation]="currentOperation()"
+                    [displayMode]="'total'"
+                  />
                 </div>
               }
 
               <!-- Input e verifica -->
-
               <div class="max-w-md mx-auto space-y-6">
-                <div>
-                  <label for="answer-input" class="field-label"> Qual è il risultato? </label>
-                  <input
-                    #answerInput
-                    id="answer-input"
-                    type="number"
-                    inputmode="numeric"
-                    [(ngModel)]="userAnswerStr"
-                    (keyup.enter)="verifyAnswer()"
-                    [class]="getInputClasses()"
-                    placeholder="?"
-                    aria-label="Inserisci il risultato dell'operazione"
-                  />
+                <div class="flex items-center justify-center gap-4">
+                  <div class="flex-1">
+                    <label for="addend1-input" class="field-label text-center block">
+                      Primo addendo
+                    </label>
+                    <input
+                      #addend1Input
+                      id="addend1-input"
+                      type="number"
+                      inputmode="numeric"
+                      [ngModel]="addend1Str()"
+                      (ngModelChange)="addend1Str.set($event)"
+                      (keyup.enter)="focusAddend2()"
+                      [class]="getInputClasses(1)"
+                      placeholder="?"
+                      aria-label="Inserisci il primo addendo"
+                    />
+                  </div>
+                  <div class="text-4xl pt-6">+</div>
+                  <div class="flex-1">
+                    <label for="addend2-input" class="field-label text-center block">
+                      Secondo addendo
+                    </label>
+                    <input
+                      #addend2Input
+                      id="addend2-input"
+                      type="number"
+                      inputmode="numeric"
+                      [ngModel]="addend2Str()"
+                      (ngModelChange)="addend2Str.set($event)"
+                      (keyup.enter)="verifyAnswer()"
+                      [class]="getInputClasses(2)"
+                      placeholder="?"
+                      aria-label="Inserisci il secondo addendo"
+                    />
+                  </div>
                 </div>
 
                 <button
@@ -121,29 +152,50 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
     `,
   ],
 })
-export class DivisionComponent {
+export class DecompositionComponent {
   private mathService = inject(MathExerciseService);
   private storageService = inject(OptionsStorageService);
   private feedbackService = inject(FeedbackService);
 
-  exerciseOptions = signal<ExerciseOptions>(this.storageService.loadOptionsForSection('division'));
+  exerciseOptions = signal<ExerciseOptions>(
+    this.storageService.loadOptionsForSection('decomposition'),
+  );
 
   currentOperation = signal<MathOperation>(this.generateNewOperation());
-  userAnswerStr = '';
+  addend1Str = signal('');
+  addend2Str = signal('');
   attemptCount = signal<number>(0);
   showFeedback = signal<boolean>(false);
   feedbackType = signal<FeedbackType>('retry');
 
-  answerInput = viewChild<ElementRef<HTMLInputElement>>('answerInput');
+  addend1Input = viewChild<ElementRef<HTMLInputElement>>('addend1Input');
+  addend2Input = viewChild<ElementRef<HTMLInputElement>>('addend2Input');
 
-  isCorrect = computed(() => Number(this.userAnswerStr) === this.currentOperation().result);
+  isCorrect = computed(() => {
+    const a1 = Number(this.addend1Str());
+    const a2 = Number(this.addend2Str());
+
+    console.log('Verifying answer:', { a1, a2, expected: this.currentOperation().result });
+
+    // Verifica che i numeri siano validi
+    if (isNaN(a1) || isNaN(a2)) return false;
+
+    // Verifica che siano non negativi
+    if (a1 < 0 || a2 < 0) return false;
+
+    // Verifica che la somma corrisponda al risultato
+    const sum = a1 + a2;
+    return sum === this.currentOperation().result;
+  });
+
   shouldShowAnswer = computed(() => this.attemptCount() >= 3 && !this.isCorrect());
 
   feedbackMessage = computed(() => {
     if (this.isCorrect()) {
       return this.feedbackService.getMessage('success');
     } else if (this.shouldShowAnswer()) {
-      return this.feedbackService.getMessage('show-answer', this.currentOperation().result);
+      const op = this.currentOperation();
+      return `La risposta è ${op.operand1} + ${op.operand2} = ${op.result}. Proviamo con un altro esercizio!`;
     } else {
       return this.feedbackService.getMessage('retry');
     }
@@ -157,9 +209,13 @@ export class DivisionComponent {
     // Focus auto sulla pagina iniziale
     effect(() => {
       setTimeout(() => {
-        this.answerInput()?.nativeElement.focus();
+        this.addend1Input()?.nativeElement.focus();
       }, 0);
     });
+  }
+
+  focusAddend2(): void {
+    this.addend2Input()?.nativeElement.focus();
   }
 
   onOptionsChanged(newOptions: Partial<ExerciseOptions>): void {
@@ -172,15 +228,12 @@ export class DivisionComponent {
 
   generateNewOperation(): MathOperation {
     const options = this.exerciseOptions();
-    return this.mathService.generateOperation('division', options.level, 2);
-  }
-
-  formatOperation(): string {
-    return this.mathService.formatOperation(this.currentOperation());
+    return this.mathService.generateOperation('decomposition', options.level, 2);
   }
 
   verifyAnswer(): void {
-    if (!this.userAnswerStr) {
+    // Verifica che entrambi gli input abbiano un valore (incluso 0)
+    if (this.addend1Str() === '' || this.addend2Str() === '') {
       return;
     }
 
@@ -200,28 +253,30 @@ export class DivisionComponent {
 
   closeFeedback(): void {
     this.showFeedback.set(false);
-    this.userAnswerStr = '';
+    this.addend1Str.set('');
+    this.addend2Str.set('');
     setTimeout(() => {
-      this.answerInput()?.nativeElement.focus();
+      this.addend1Input()?.nativeElement.focus();
     }, 0);
   }
 
   nextExercise(): void {
     this.resetExercise();
     setTimeout(() => {
-      this.answerInput()?.nativeElement.focus();
+      this.addend1Input()?.nativeElement.focus();
     }, 0);
   }
 
   private resetExercise(): void {
     this.currentOperation.set(this.generateNewOperation());
-    this.userAnswerStr = '';
+    this.addend1Str.set('');
+    this.addend2Str.set('');
     this.attemptCount.set(0);
     this.showFeedback.set(false);
     this.feedbackType.set('retry');
   }
 
-  getInputClasses(): string {
+  getInputClasses(inputNumber: number): string {
     if (this.showFeedback() && !this.isCorrect() && this.attemptCount() > 0) {
       return 'field error';
     }

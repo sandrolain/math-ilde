@@ -67,6 +67,14 @@ export class OptionsStorageService {
           numberOfOperands: 2,
           showVisuals: true,
         };
+      case 'decomposition':
+        return {
+          section,
+          operationType: 'decomposition',
+          level: 10,
+          numberOfOperands: 2,
+          showVisuals: true,
+        };
     }
   }
 

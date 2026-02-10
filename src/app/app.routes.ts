@@ -25,6 +25,11 @@ export const routes: Routes = [
       import('./pages/division/division.component').then((m) => m.DivisionComponent),
   },
   {
+    path: 'scomposizione',
+    loadComponent: () =>
+      import('./pages/decomposition/decomposition.component').then((m) => m.DecompositionComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

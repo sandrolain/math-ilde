@@ -14,7 +14,7 @@ import { RouterLink } from '@angular/router';
           Impara la matematica divertendoti!
         </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Addizioni e Sottrazioni -->
           <a
             routerLink="/addizioni-sottrazioni"
@@ -60,6 +60,21 @@ import { RouterLink } from '@angular/router';
               Divisioni
             </h2>
             <p class="text-center text-[var(--color-text-secondary)]">Dividi e conquista</p>
+          </a>
+
+          <!-- Scomposizione -->
+          <a
+            routerLink="/scomposizione"
+            class="card card-interactive card-section animate-[fadeIn_1.5s_ease-out]"
+            aria-label="Vai alla sezione Scomposizione della Somma"
+          >
+            <div class="text-6xl text-center mb-4 group-hover:animate-[pulse_0.5s_ease-in-out]">
+              🧩
+            </div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Scomposizione
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">Scomponi le somme</p>
           </a>
         </div>
       </div>

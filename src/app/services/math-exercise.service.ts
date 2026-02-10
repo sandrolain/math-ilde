@@ -28,6 +28,8 @@ export class MathExerciseService {
         return this.generateMultiplication(level);
       case 'division':
         return this.generateDivision(level);
+      case 'decomposition':
+        return this.generateDecomposition(level);
       case 'mixed':
         // Mix casuale tra addizione e sottrazione
         const randomType = Math.random() < 0.5 ? 'addition' : 'subtraction';
@@ -238,6 +240,26 @@ export class MathExerciseService {
       operator: '÷',
       operand2: divisor,
       result: quotient,
+    };
+  }
+
+  /**
+   * Genera un esercizio di scomposizione della somma
+   * Il risultato è dato, gli addendi devono essere trovati
+   */
+  private generateDecomposition(level: DifficultyLevel): MathOperation {
+    // Genera il risultato target
+    const result = this.randomInt(2, level);
+
+    // Genera due addendi che sommano al risultato
+    const operand1 = this.randomInt(0, result);
+    const operand2 = result - operand1;
+
+    return {
+      operand1,
+      operator: '+',
+      operand2,
+      result,
     };
   }
 
