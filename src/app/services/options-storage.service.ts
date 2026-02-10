@@ -49,6 +49,7 @@ export class OptionsStorageService {
           operationType: 'mixed',
           level: 10,
           numberOfOperands: 2,
+          showVisuals: true,
         };
       case 'multiplication':
         return {
@@ -56,6 +57,7 @@ export class OptionsStorageService {
           operationType: 'multiplication',
           level: 10,
           numberOfOperands: 2,
+          showVisuals: true,
         };
       case 'division':
         return {
@@ -63,6 +65,7 @@ export class OptionsStorageService {
           operationType: 'division',
           level: 10,
           numberOfOperands: 2,
+          showVisuals: true,
         };
     }
   }

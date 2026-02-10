@@ -26,10 +26,12 @@ import type { FeedbackType } from '../../types/exercise.types';
             <button
               #continueBtn
               (click)="onContinue()"
-              class="btn btn-success btn-lg"
-              aria-label="Passa al prossimo esercizio"
+              class="btn btn-lg"
+              [class.btn-success]="type() !== 'retry'"
+              [class.btn-primary]="type() === 'retry'"
+              [attr.aria-label]="getButtonLabel()"
             >
-              Prossimo esercizio →
+              {{ getButtonText() }}
             </button>
           </div>
         </div>
@@ -48,7 +50,8 @@ export class FeedbackComponent {
   show = input.required<boolean>();
   type = input.required<FeedbackType>();
   message = input.required<string>();
-  continue = output<void>();
+  close = output<void>();
+  next = output<void>();
 
   continueBtn = viewChild<ElementRef<HTMLButtonElement>>('continueBtn');
 
@@ -63,7 +66,19 @@ export class FeedbackComponent {
   }
 
   onContinue(): void {
-    this.continue.emit();
+    if (this.type() === 'retry') {
+      this.close.emit();
+    } else {
+      this.next.emit();
+    }
+  }
+
+  getButtonText(): string {
+    return this.type() === 'retry' ? 'Ritenta' : 'Prossimo esercizio →';
+  }
+
+  getButtonLabel(): string {
+    return this.type() === 'retry' ? 'Ritenta questo esercizio' : 'Passa al prossimo esercizio';
   }
 
   getModalClasses(): string {

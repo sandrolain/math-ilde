@@ -1,18 +1,43 @@
 import { Component, input, output, signal, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import type {
   OperationType,
   DifficultyLevel,
   NumberOfOperands,
   SectionType,
+  ExerciseOptions,
 } from '../../types/exercise.types';
 
 @Component({
   selector: 'app-options-control',
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   template: `
-    <div class="bg-white rounded-2xl shadow-lg p-6 space-y-6">
-      <h3 class="text-xl font-bold text-[var(--color-text-primary)] mb-4">Opzioni</h3>
+    <!-- Mobile toggle button -->
+    <div class="lg:hidden flex justify-start mb-4">
+      <button
+        (click)="toggleMobileMenu()"
+        class="btn btn-primary"
+        [attr.aria-expanded]="mobileMenuOpen()"
+      >
+        {{ mobileMenuOpen() ? '✕ Chiudi' : '☰ Opzioni' }}
+      </button>
+    </div>
+
+    <!-- Sidebar menu - slide out on mobile -->
+    <div
+      class="fixed lg:relative inset-y-0 left-0 w-80 bg-white shadow-lg p-6 space-y-6 z-40 transition-transform duration-300 lg:translate-x-0 max-h-screen overflow-y-auto"
+      [class.translate-x-[-100%]]="!mobileMenuOpen()"
+    >
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-[var(--color-text-primary)]">Opzioni</h3>
+        <button
+          (click)="toggleMobileMenu()"
+          class="lg:hidden text-2xl text-[var(--color-text-primary)]"
+        >
+          ✕
+        </button>
+      </div>
 
       <!-- Tipo di operazione (solo per addizioni-sottrazioni) -->
       @if (section() === 'addition-subtraction') {
@@ -30,7 +55,8 @@ import type {
                 value="addition"
                 [(ngModel)]="selectedOperationType"
                 (change)="onOptionsChange()"
-                class="w-5 h-5 text-[var(--color-primary)]"
+                class="w-5 h-5"
+                [style.accent-color]="'var(--color-primary)'"
               />
               <span class="text-lg">Solo addizioni ➕</span>
             </label>
@@ -43,7 +69,8 @@ import type {
                 value="subtraction"
                 [(ngModel)]="selectedOperationType"
                 (change)="onOptionsChange()"
-                class="w-5 h-5 text-[var(--color-primary)]"
+                class="w-5 h-5"
+                [style.accent-color]="'var(--color-primary)'"
               />
               <span class="text-lg">Solo sottrazioni ➖</span>
             </label>
@@ -56,7 +83,8 @@ import type {
                 value="mixed"
                 [(ngModel)]="selectedOperationType"
                 (change)="onOptionsChange()"
-                class="w-5 h-5 text-[var(--color-primary)]"
+                class="w-5 h-5"
+                [style.accent-color]="'var(--color-primary)'"
               />
               <span class="text-lg">Misto ➕➖</span>
             </label>
@@ -79,7 +107,8 @@ import type {
               [value]="10"
               [(ngModel)]="selectedLevel"
               (change)="onOptionsChange()"
-              class="w-5 h-5 text-[var(--color-primary)]"
+              class="w-5 h-5"
+              [style.accent-color]="'var(--color-primary)'"
             />
             <span class="text-lg">{{ getLevelLabel(10) }}</span>
           </label>
@@ -92,7 +121,8 @@ import type {
               [value]="50"
               [(ngModel)]="selectedLevel"
               (change)="onOptionsChange()"
-              class="w-5 h-5 text-[var(--color-primary)]"
+              class="w-5 h-5"
+              [style.accent-color]="'var(--color-primary)'"
             />
             <span class="text-lg">{{ getLevelLabel(50) }}</span>
           </label>
@@ -105,7 +135,8 @@ import type {
               [value]="100"
               [(ngModel)]="selectedLevel"
               (change)="onOptionsChange()"
-              class="w-5 h-5 text-[var(--color-primary)]"
+              class="w-5 h-5"
+              [style.accent-color]="'var(--color-primary)'"
             />
             <span class="text-lg">{{ getLevelLabel(100) }}</span>
           </label>
@@ -118,7 +149,8 @@ import type {
               [value]="1000"
               [(ngModel)]="selectedLevel"
               (change)="onOptionsChange()"
-              class="w-5 h-5 text-[var(--color-primary)]"
+              class="w-5 h-5"
+              [style.accent-color]="'var(--color-primary)'"
             />
             <span class="text-lg">{{ getLevelLabel(1000) }}</span>
           </label>
@@ -141,7 +173,8 @@ import type {
                 [value]="2"
                 [(ngModel)]="selectedNumberOfOperands"
                 (change)="onOptionsChange()"
-                class="w-5 h-5 text-[var(--color-primary)]"
+                class="w-5 h-5"
+                [style.accent-color]="'var(--color-primary)'"
               />
               <span class="text-lg">2 addendi</span>
             </label>
@@ -154,14 +187,39 @@ import type {
                 [value]="3"
                 [(ngModel)]="selectedNumberOfOperands"
                 (change)="onOptionsChange()"
-                class="w-5 h-5 text-[var(--color-primary)]"
+                class="w-5 h-5"
+                [style.accent-color]="'var(--color-primary)'"
               />
               <span class="text-lg">3 addendi</span>
             </label>
           </div>
         </div>
       }
+
+      <!-- Mostra rappresentazione grafica -->
+      <div class="space-y-2">
+        <label class="block text-sm font-semibold text-[var(--color-text-primary)]">
+          Visualizzazione:
+        </label>
+        <label
+          class="flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="showVisuals"
+            (change)="onOptionsChange()"
+            class="w-5 h-5"
+            [style.accent-color]="'var(--color-primary)'"
+          />
+          <span class="text-lg">Mostra forme 🎨</span>
+        </label>
+      </div>
     </div>
+
+    <!-- Mobile menu overlay -->
+    @if (mobileMenuOpen()) {
+      <div class="fixed inset-0 bg-black/50 lg:hidden z-30" (click)="toggleMobileMenu()"></div>
+    }
   `,
   styles: [
     `
@@ -176,16 +234,16 @@ export class OptionsControlComponent {
   operationType = input.required<OperationType>();
   level = input.required<DifficultyLevel>();
   numberOfOperands = input.required<NumberOfOperands>();
+  visualsEnabled = input<boolean>(true);
 
-  optionsChanged = output<{
-    operationType: OperationType;
-    level: DifficultyLevel;
-    numberOfOperands: NumberOfOperands;
-  }>();
+  optionsChanged = output<Partial<ExerciseOptions>>();
+
+  mobileMenuOpen = signal(false);
 
   selectedOperationType: OperationType = 'mixed';
   selectedLevel: DifficultyLevel = 10;
   selectedNumberOfOperands: NumberOfOperands = 2;
+  showVisuals = true;
 
   constructor() {
     // Sincronizza i valori interni con gli input quando cambiano
@@ -193,14 +251,21 @@ export class OptionsControlComponent {
       this.selectedOperationType = this.operationType();
       this.selectedLevel = this.level();
       this.selectedNumberOfOperands = this.numberOfOperands();
+      this.showVisuals = this.visualsEnabled();
     });
   }
 
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen.update((open) => !open);
+  }
+
   onOptionsChange(): void {
+    this.mobileMenuOpen.set(false); // Close menu on mobile when option changes
     this.optionsChanged.emit({
       operationType: this.selectedOperationType,
       level: this.selectedLevel,
       numberOfOperands: this.selectedNumberOfOperands,
+      showVisuals: this.showVisuals,
     });
   }
 

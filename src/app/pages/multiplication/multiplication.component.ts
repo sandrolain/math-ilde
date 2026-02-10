@@ -41,6 +41,7 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
               [operationType]="exerciseOptions().operationType"
               [level]="exerciseOptions().level"
               [numberOfOperands]="exerciseOptions().numberOfOperands"
+              [visualsEnabled]="exerciseOptions().showVisuals"
               (optionsChanged)="onOptionsChanged($event)"
             />
           </aside>
@@ -50,15 +51,26 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
             <div class="card">
               <!-- Operazione matematica -->
               <div class="text-center">
+                <div class="mb-8">
+                  <button
+                    (click)="nextExercise()"
+                    class="btn btn-secondary btn-sm"
+                    aria-label="Cambia esercizio"
+                  >
+                    ➜ Cambia esercizio
+                  </button>
+                </div>
                 <div class="operation-display">
                   {{ formatOperation() }}
                 </div>
               </div>
 
               <!-- Rappresentazione visuale -->
-              <div class="my-8">
-                <app-visual-representation [operation]="currentOperation()" />
-              </div>
+              @if (exerciseOptions().showVisuals) {
+                <div class="my-8">
+                  <app-visual-representation [operation]="currentOperation()" />
+                </div>
+              }
 
               <!-- Input e verifica -->
               @if (!showFeedback()) {
@@ -69,12 +81,12 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
                       #answerInput
                       id="answer-input"
                       type="number"
-                      [(ngModel)]="userAnswer"
+                      inputmode="numeric"
+                      [(ngModel)]="userAnswerStr"
                       (keyup.enter)="verifyAnswer()"
                       [class]="getInputClasses()"
                       placeholder="?"
                       aria-label="Inserisci il risultato dell'operazione"
-                      autofocus
                     />
                   </div>
 
@@ -93,7 +105,8 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
                 [show]="showFeedback()"
                 [type]="feedbackType()"
                 [message]="feedbackMessage()"
-                (continue)="nextExercise()"
+                (close)="closeFeedback()"
+                (next)="nextExercise()"
               />
             </div>
           </main>
@@ -119,14 +132,14 @@ export class MultiplicationComponent {
   );
 
   currentOperation = signal<MathOperation>(this.generateNewOperation());
-  userAnswer = signal<number | null>(null);
+  userAnswerStr = '';
   attemptCount = signal<number>(0);
   showFeedback = signal<boolean>(false);
   feedbackType = signal<FeedbackType>('retry');
 
   answerInput = viewChild<ElementRef<HTMLInputElement>>('answerInput');
 
-  isCorrect = computed(() => this.userAnswer() === this.currentOperation().result);
+  isCorrect = computed(() => Number(this.userAnswerStr) === this.currentOperation().result);
   shouldShowAnswer = computed(() => this.attemptCount() >= 3 && !this.isCorrect());
 
   feedbackMessage = computed(() => {
@@ -142,6 +155,13 @@ export class MultiplicationComponent {
   constructor() {
     effect(() => {
       this.storageService.saveOptions(this.exerciseOptions());
+    });
+
+    // Focus auto sulla pagina iniziale
+    effect(() => {
+      setTimeout(() => {
+        this.answerInput()?.nativeElement.focus();
+      }, 0);
     });
   }
 
@@ -163,7 +183,7 @@ export class MultiplicationComponent {
   }
 
   verifyAnswer(): void {
-    if (this.userAnswer() === null || this.userAnswer() === undefined) {
+    if (!this.userAnswerStr) {
       return;
     }
 
@@ -178,27 +198,27 @@ export class MultiplicationComponent {
     } else {
       this.feedbackType.set('retry');
       this.showFeedback.set(true);
-
-      setTimeout(() => {
-        this.showFeedback.set(false);
-        this.userAnswer.set(null);
-        setTimeout(() => {
-          this.answerInput()?.nativeElement.focus();
-        }, 100);
-      }, 2000);
     }
+  }
+
+  closeFeedback(): void {
+    this.showFeedback.set(false);
+    this.userAnswerStr = '';
+    setTimeout(() => {
+      this.answerInput()?.nativeElement.focus();
+    }, 0);
   }
 
   nextExercise(): void {
     this.resetExercise();
     setTimeout(() => {
       this.answerInput()?.nativeElement.focus();
-    }, 100);
+    }, 0);
   }
 
   private resetExercise(): void {
     this.currentOperation.set(this.generateNewOperation());
-    this.userAnswer.set(null);
+    this.userAnswerStr = '';
     this.attemptCount.set(0);
     this.showFeedback.set(false);
     this.feedbackType.set('retry');

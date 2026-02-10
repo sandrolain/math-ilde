@@ -21,6 +21,7 @@ export interface ExerciseOptions {
   operationType: OperationType;
   level: DifficultyLevel;
   numberOfOperands: NumberOfOperands;
+  showVisuals: boolean;
 }
 
 export interface StoredOptions extends ExerciseOptions {
