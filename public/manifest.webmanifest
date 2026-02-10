@@ -1,0 +1,89 @@
+{
+  "name": "Math-ilde - Impara la matematica divertendoti",
+  "short_name": "Math-ilde",
+  "description": "App educativa per insegnare la matematica ai bambini della scuola primaria con esercizi interattivi di addizioni, sottrazioni, moltiplicazioni e divisioni",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#a8d8ea",
+  "background_color": "#fff9f0",
+  "icons": [
+    {
+      "src": "favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": [
+    "education"
+  ],
+  "shortcuts": [
+    {
+      "name": "Addizioni e Sottrazioni",
+      "short_name": "Addizioni",
+      "description": "Esercizi di addizioni e sottrazioni",
+      "url": "/addizioni-sottrazioni",
+      "icons": [
+        {
+          "src": "android-chrome-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Moltiplicazioni",
+      "short_name": "Moltiplicazioni",
+      "description": "Esercizi di moltiplicazioni",
+      "url": "/moltiplicazioni",
+      "icons": [
+        {
+          "src": "android-chrome-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Divisioni",
+      "short_name": "Divisioni",
+      "description": "Esercizi di divisioni",
+      "url": "/divisioni",
+      "icons": [
+        {
+          "src": "android-chrome-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
