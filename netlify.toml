@@ -70,6 +70,12 @@
   [headers.values]
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none';"
 
+# Service Worker registration script
+[[headers]]
+  for = "/register-sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=600"
+
 # Service Worker
 [[headers]]
   for = "/ngsw-worker.js"

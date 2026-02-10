@@ -51,14 +51,8 @@
     <meta name="apple-mobile-web-app-title" content="Math-ilde" />
     <meta name="mobile-web-app-capable" content="yes" />
 
-    <!-- PWA service worker -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker
-          .register('ngsw-worker.js')
-          .catch((err) => console.log('Service Worker registration failed: ', err));
-      }
-    </script>
+    <!-- PWA service worker registration -->
+    <script src="register-sw.js" defer></script>
   </head>
   <body>
     <app-root></app-root>
