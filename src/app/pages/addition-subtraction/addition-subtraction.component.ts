@@ -89,7 +89,8 @@ import type {
                     id="answer-input"
                     type="number"
                     inputmode="numeric"
-                    [(ngModel)]="userAnswerStr"
+                    [value]="userAnswerStr()"
+                    (input)="userAnswerStr.set($any($event.target).value)"
                     (keyup.enter)="verifyAnswer()"
                     [class]="getInputClasses()"
                     placeholder="?"
@@ -139,7 +140,7 @@ export class AdditionSubtractionComponent {
   );
 
   currentOperation = signal<MathOperation>(this.generateNewOperation());
-  userAnswerStr = '';
+  userAnswerStr = signal<string>('');
   attemptCount = signal<number>(0);
   showFeedback = signal<boolean>(false);
   feedbackType = signal<FeedbackType>('retry');
@@ -147,7 +148,11 @@ export class AdditionSubtractionComponent {
   answerInput = viewChild<ElementRef<HTMLInputElement>>('answerInput');
 
   // Computed
-  isCorrect = computed(() => Number(this.userAnswerStr) === this.currentOperation().result);
+  isCorrect = computed(() => {
+    const userAnswer = Number(this.userAnswerStr());
+    const correctAnswer = this.currentOperation().result;
+    return userAnswer === correctAnswer;
+  });
 
   shouldShowAnswer = computed(() => this.attemptCount() >= 3 && !this.isCorrect());
 
@@ -199,7 +204,7 @@ export class AdditionSubtractionComponent {
   }
 
   verifyAnswer(): void {
-    if (!this.userAnswerStr) {
+    if (!this.userAnswerStr()) {
       return;
     }
 
@@ -219,7 +224,7 @@ export class AdditionSubtractionComponent {
 
   closeFeedback(): void {
     this.showFeedback.set(false);
-    this.userAnswerStr = '';
+    this.userAnswerStr.set('');
     setTimeout(() => {
       this.answerInput()?.nativeElement.focus();
     }, 0);
@@ -234,7 +239,7 @@ export class AdditionSubtractionComponent {
 
   private resetExercise(): void {
     this.currentOperation.set(this.generateNewOperation());
-    this.userAnswerStr = '';
+    this.userAnswerStr.set('');
     this.attemptCount.set(0);
     this.showFeedback.set(false);
     this.feedbackType.set('retry');

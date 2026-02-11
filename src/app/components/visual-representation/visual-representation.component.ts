@@ -48,11 +48,10 @@ interface RowOfElements {
                 }
               </div>
               <div
-                class="text-lg md:text-xl font-bold min-w-30"
+                class="text-lg md:text-xl font-bold min-w-30 flex flex-col items-center justify-center leading-none"
                 style="color: var(--color-text-primary);"
-              >
-                {{ row.label }}
-              </div>
+                [innerHTML]="row.label"
+              ></div>
             </div>
           }
         </div>
@@ -77,7 +76,10 @@ interface RowOfElements {
 
       .crossed-out {
         position: relative;
-        opacity: 0.3;
+
+        img {
+          opacity: 0.3;
+        }
       }
 
       .crossed-out::after {
@@ -89,6 +91,7 @@ interface RowOfElements {
         height: 3px;
         background-color: #ef4444;
         transform: translate(-50%, -50%) rotate(-45deg);
+        opacity: 0.5;
       }
     `,
   ],
@@ -299,9 +302,9 @@ export class VisualRepresentationComponent {
   private createRowLabel(count: number): string {
     const roman = this.toRoman(count);
     if (count === 10) {
-      return `10, ${roman}, 1da`;
+      return `<div>10</div><div>${roman}</div><div>1da</div>`;
     } else {
-      return `${count}, ${roman}, ${count}u`;
+      return `<div>${count}</div><div>${roman}</div><div>${count}u</div>`;
     }
   }
 
