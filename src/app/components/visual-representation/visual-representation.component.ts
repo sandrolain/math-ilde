@@ -1,5 +1,11 @@
 import { Component, input, computed } from '@angular/core';
-import type { MathOperation, VisualElement, ShapeType } from '../../types/exercise.types';
+import { NgOptimizedImage } from '@angular/common';
+import type {
+  MathOperation,
+  VisualElement,
+  ShapeType,
+  FruitType,
+} from '../../types/exercise.types';
 
 interface RowOfElements {
   elements: VisualElement[];
@@ -10,9 +16,9 @@ interface RowOfElements {
 
 @Component({
   selector: 'app-visual-representation',
-  imports: [],
+  imports: [NgOptimizedImage],
   template: `
-    <div class="flex flex-wrap items-center justify-center gap-4 md:gap-6 p-6 min-h-50">
+    <div class="flex flex-col items-center justify-center gap-4 md:gap-6 p-6 min-h-50">
       @for (group of groupedElements(); track group.groupIndex) {
         <div
           class="flex flex-col gap-3 items-center p-4 rounded-2xl border-3 min-w-12 min-h-20"
@@ -29,16 +35,15 @@ interface RowOfElements {
                 @for (element of row.elements; track element.index) {
                   <div
                     [class]="getElementClasses(element)"
-                    [style.background-color]="element.color"
                     [attr.aria-label]="getElementAriaLabel(element)"
                   >
-                    @if (element.type === 'star') {
-                      <svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full">
-                        <path
-                          d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                        />
-                      </svg>
-                    }
+                    <img
+                      [ngSrc]="'/icons/fruits/' + element.fruit + '.png'"
+                      [alt]="getElementAriaLabel(element)"
+                      width="100"
+                      height="100"
+                      class="w-full h-full object-contain"
+                    />
                   </div>
                 }
               </div>
@@ -92,6 +97,23 @@ export class VisualRepresentationComponent {
   operation = input.required<MathOperation>();
   displayMode = input<'grouped' | 'total'>('grouped');
 
+  private readonly availableFruits: FruitType[] = [
+    'apple',
+    'banana',
+    'blueberry',
+    'cherry',
+    'coconut',
+    'grape',
+    'kiwi',
+    'lemon',
+    'orange',
+    'pineapple',
+    'strawberry',
+    'watermelon',
+  ];
+
+  private usedFruits: Set<FruitType> = new Set();
+
   // Computed per l'operatore grafico (moltiplicazioni mostrano somma, divisioni nulla)
   visualOperator = computed(() => {
     if (this.displayMode() === 'total') return '';
@@ -107,10 +129,12 @@ export class VisualRepresentationComponent {
   groupedElements = computed(() => {
     const op = this.operation();
     const groups: { groupIndex: number; rows: RowOfElements[] }[] = [];
+    this.usedFruits.clear();
 
     // Modalità 'total': mostra solo il risultato totale
     if (this.displayMode() === 'total') {
-      const elements = this.createElements(op.result, 'circle', '#A8D8EA', 0, 0);
+      const fruit = this.getRandomFruit();
+      const elements = this.createElements(op.result, 'circle', '#A8D8EA', 0, 0, fruit);
       groups.push({
         groupIndex: 0,
         rows: this.organizeInRows(elements),
@@ -120,25 +144,36 @@ export class VisualRepresentationComponent {
 
     if (op.operator === '+') {
       // Addizione: gruppi separati per ogni addendo
-      const elements1 = this.createElements(op.operand1, 'circle', '#A8D8EA', 0, 0);
+      const fruit1 = this.getRandomFruit();
+      const elements1 = this.createElements(op.operand1, 'circle', '#A8D8EA', 0, 0, fruit1);
       groups.push({
         groupIndex: 0,
         rows: this.organizeInRows(elements1),
       });
 
-      const elements2 = this.createElements(op.operand2, 'square', '#FFB6C1', 1, op.operand1);
+      const fruit2 = this.getRandomFruit();
+      const elements2 = this.createElements(
+        op.operand2,
+        'square',
+        '#FFB6C1',
+        1,
+        op.operand1,
+        fruit2,
+      );
       groups.push({
         groupIndex: 1,
         rows: this.organizeInRows(elements2),
       });
 
       if (op.operand3 !== undefined) {
+        const fruit3 = this.getRandomFruit();
         const elements3 = this.createElements(
           op.operand3,
           'star',
           '#F0E68C',
           2,
           op.operand1 + op.operand2,
+          fruit3,
         );
         groups.push({
           groupIndex: 2,
@@ -151,6 +186,7 @@ export class VisualRepresentationComponent {
       const firstCrossOut = op.operand2;
       const secondCrossOut = op.operand3 || 0;
       const elements: VisualElement[] = [];
+      const fruit = this.getRandomFruit();
 
       for (let i = 0; i < totalElements; i++) {
         let color: string;
@@ -163,6 +199,7 @@ export class VisualRepresentationComponent {
         }
         elements.push({
           type: 'circle',
+          fruit,
           color,
           group: 0,
           index: i,
@@ -175,6 +212,7 @@ export class VisualRepresentationComponent {
       });
     } else if (op.operator === '×') {
       // Moltiplicazione: operand2 gruppi, ognuno con operand1 elementi
+      const fruit = this.getRandomFruit();
       for (let group = 0; group < op.operand2; group++) {
         const elements = this.createElements(
           op.operand1,
@@ -182,6 +220,7 @@ export class VisualRepresentationComponent {
           this.getGroupColor(group),
           group,
           group * op.operand1,
+          fruit,
         );
         groups.push({
           groupIndex: group,
@@ -192,6 +231,7 @@ export class VisualRepresentationComponent {
       // Divisione: tutti gli elementi divisi in gruppi uguali
       const elementsPerGroup = op.result;
       const numberOfGroups = op.operand2;
+      const fruit = this.getRandomFruit();
 
       for (let group = 0; group < numberOfGroups; group++) {
         const elements = this.createElements(
@@ -200,6 +240,7 @@ export class VisualRepresentationComponent {
           this.getGroupColor(group),
           group,
           group * elementsPerGroup,
+          fruit,
         );
         groups.push({
           groupIndex: group,
@@ -217,13 +258,23 @@ export class VisualRepresentationComponent {
     color: string,
     group: number,
     startIndex: number,
+    fruit: FruitType,
   ): VisualElement[] {
     return Array.from({ length: count }, (_, i) => ({
       type,
+      fruit,
       color,
       group,
       index: startIndex + i,
     }));
+  }
+
+  private getRandomFruit(): FruitType {
+    const availableChoices = this.availableFruits.filter((f) => !this.usedFruits.has(f));
+    const choices = availableChoices.length > 0 ? availableChoices : this.availableFruits;
+    const fruit = choices[Math.floor(Math.random() * choices.length)];
+    this.usedFruits.add(fruit);
+    return fruit;
   }
 
   private organizeInRows(elements: VisualElement[]): RowOfElements[] {
@@ -295,21 +346,7 @@ export class VisualRepresentationComponent {
       }
     }
 
-    // Forma specifica
-    let shapeClass = '';
-    switch (element.type) {
-      case 'circle':
-        shapeClass = 'rounded-full';
-        break;
-      case 'square':
-        shapeClass = 'rounded-lg';
-        break;
-      case 'star':
-        shapeClass = 'rounded-lg p-1';
-        break;
-    }
-
-    return `${baseClasses} ${sizeClass} ${shapeClass}`;
+    return `${baseClasses} ${sizeClass}`;
   }
 
   private getElementSize(): string {
@@ -344,11 +381,20 @@ export class VisualRepresentationComponent {
   }
 
   getElementAriaLabel(element: VisualElement): string {
-    const shapes: Record<ShapeType, string> = {
-      circle: 'cerchio',
-      square: 'quadrato',
-      star: 'stella',
+    const fruitNames: Record<FruitType, string> = {
+      apple: 'mela',
+      banana: 'banana',
+      blueberry: 'mirtillo',
+      cherry: 'ciliegia',
+      coconut: 'cocco',
+      grape: 'uva',
+      kiwi: 'kiwi',
+      lemon: 'limone',
+      orange: 'arancia',
+      pineapple: 'ananas',
+      strawberry: 'fragola',
+      watermelon: 'anguria',
     };
-    return shapes[element.type];
+    return fruitNames[element.fruit];
   }
 }

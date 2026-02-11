@@ -13,6 +13,19 @@ export type NumberOfOperands = 2 | 3;
 export type SectionType = 'addition-subtraction' | 'multiplication' | 'division' | 'decomposition';
 export type FeedbackType = 'success' | 'retry' | 'show-answer';
 export type ShapeType = 'circle' | 'square' | 'star';
+export type FruitType =
+  | 'apple'
+  | 'banana'
+  | 'blueberry'
+  | 'cherry'
+  | 'coconut'
+  | 'grape'
+  | 'kiwi'
+  | 'lemon'
+  | 'orange'
+  | 'pineapple'
+  | 'strawberry'
+  | 'watermelon';
 
 export interface MathOperation {
   operand1: number;
@@ -36,6 +49,7 @@ export interface StoredOptions extends ExerciseOptions {
 
 export interface VisualElement {
   type: ShapeType;
+  fruit: FruitType;
   color: string;
   group: number;
   index: number;
