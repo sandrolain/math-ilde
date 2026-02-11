@@ -174,7 +174,7 @@ body {
 
   /* Headers */
   .header {
-    @apply shadow-md;
+    @apply shadow-md text-shadow-md;
     background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
   }
 

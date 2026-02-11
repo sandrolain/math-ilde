@@ -1,35 +1,59 @@
-import { Component, input, computed, signal, effect } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 import type { MathOperation, VisualElement, ShapeType } from '../../types/exercise.types';
+
+interface RowOfElements {
+  elements: VisualElement[];
+  rowIndex: number;
+  count: number;
+  label: string;
+}
 
 @Component({
   selector: 'app-visual-representation',
   imports: [],
   template: `
-    <div class="flex flex-wrap items-center justify-center gap-4 md:gap-6 p-6 min-h-[200px]">
+    <div class="flex flex-wrap items-center justify-center gap-4 md:gap-6 p-6 min-h-50">
       @for (group of groupedElements(); track group.groupIndex) {
         <div
-          [class]="getGroupClasses()"
+          class="flex flex-col gap-3 items-center p-4 rounded-2xl border-3 min-w-12 min-h-20"
           style="border-color: var(--color-primary); background-color: rgba(255, 255, 255, 0.5);"
         >
-          @for (element of group.elements; track element.index) {
-            <div
-              [class]="getElementClasses(element)"
-              [style.background-color]="element.color"
-              [attr.aria-label]="getElementAriaLabel(element)"
-            >
-              @if (element.type === 'star') {
-                <svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full">
-                  <path
-                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                  />
-                </svg>
-              }
+          @if (group.rows.length === 0) {
+            <div class="text-2xl font-bold opacity-30" style="color: var(--color-text-primary);">
+              ∅
+            </div>
+          }
+          @for (row of group.rows; track row.rowIndex) {
+            <div class="flex items-center justify-between gap-4 w-full">
+              <div class="flex gap-2 items-center justify-center">
+                @for (element of row.elements; track element.index) {
+                  <div
+                    [class]="getElementClasses(element)"
+                    [style.background-color]="element.color"
+                    [attr.aria-label]="getElementAriaLabel(element)"
+                  >
+                    @if (element.type === 'star') {
+                      <svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full">
+                        <path
+                          d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                        />
+                      </svg>
+                    }
+                  </div>
+                }
+              </div>
+              <div
+                class="text-lg md:text-xl font-bold min-w-30"
+                style="color: var(--color-text-primary);"
+              >
+                {{ row.label }}
+              </div>
             </div>
           }
         </div>
 
         @if (!$last && visualOperator()) {
-          <div class="text-4xl font-bold text-[var(--color-text-primary)]">
+          <div class="text-4xl font-bold" style="color: var(--color-text-primary);">
             {{ visualOperator() }}
           </div>
         }
@@ -79,42 +103,46 @@ export class VisualRepresentationComponent {
     return op.operator;
   });
 
-  // Computed per generare gli elementi visivi raggruppati
+  // Computed per generare gli elementi visivi raggruppati in righe di 10
   groupedElements = computed(() => {
     const op = this.operation();
-    const groups: { groupIndex: number; elements: VisualElement[] }[] = [];
+    const groups: { groupIndex: number; rows: RowOfElements[] }[] = [];
 
-    // Modalità 'total': mostra solo il risultato totale in un unico gruppo
+    // Modalità 'total': mostra solo il risultato totale
     if (this.displayMode() === 'total') {
+      const elements = this.createElements(op.result, 'circle', '#A8D8EA', 0, 0);
       groups.push({
         groupIndex: 0,
-        elements: this.createElements(op.result, 'circle', '#A8D8EA', 0, 0),
+        rows: this.organizeInRows(elements),
       });
       return groups;
     }
 
     if (op.operator === '+') {
       // Addizione: gruppi separati per ogni addendo
+      const elements1 = this.createElements(op.operand1, 'circle', '#A8D8EA', 0, 0);
       groups.push({
         groupIndex: 0,
-        elements: this.createElements(op.operand1, 'circle', '#A8D8EA', 0, 0),
+        rows: this.organizeInRows(elements1),
       });
 
+      const elements2 = this.createElements(op.operand2, 'square', '#FFB6C1', 1, op.operand1);
       groups.push({
         groupIndex: 1,
-        elements: this.createElements(op.operand2, 'square', '#FFB6C1', 1, op.operand1),
+        rows: this.organizeInRows(elements2),
       });
 
       if (op.operand3 !== undefined) {
+        const elements3 = this.createElements(
+          op.operand3,
+          'star',
+          '#F0E68C',
+          2,
+          op.operand1 + op.operand2,
+        );
         groups.push({
           groupIndex: 2,
-          elements: this.createElements(
-            op.operand3,
-            'star',
-            '#F0E68C',
-            2,
-            op.operand1 + op.operand2,
-          ),
+          rows: this.organizeInRows(elements3),
         });
       }
     } else if (op.operator === '-') {
@@ -127,13 +155,10 @@ export class VisualRepresentationComponent {
       for (let i = 0; i < totalElements; i++) {
         let color: string;
         if (i < firstCrossOut) {
-          // Primo gruppo sottratto (operand2) - rosa
           color = '#FFB6C1';
         } else if (i < firstCrossOut + secondCrossOut) {
-          // Secondo gruppo sottratto (operand3) - giallo
           color = '#F0E68C';
         } else {
-          // Elementi rimanenti - azzurro
           color = '#A8D8EA';
         }
         elements.push({
@@ -144,20 +169,23 @@ export class VisualRepresentationComponent {
         });
       }
 
-      groups.push({ groupIndex: 0, elements });
+      groups.push({
+        groupIndex: 0,
+        rows: this.organizeInRows(elements),
+      });
     } else if (op.operator === '×') {
       // Moltiplicazione: operand2 gruppi, ognuno con operand1 elementi
-      // Es: 4 × 2 = 2 gruppi di 4 elementi
       for (let group = 0; group < op.operand2; group++) {
+        const elements = this.createElements(
+          op.operand1,
+          'circle',
+          this.getGroupColor(group),
+          group,
+          group * op.operand1,
+        );
         groups.push({
           groupIndex: group,
-          elements: this.createElements(
-            op.operand1,
-            'circle',
-            this.getGroupColor(group),
-            group,
-            group * op.operand1,
-          ),
+          rows: this.organizeInRows(elements),
         });
       }
     } else if (op.operator === '÷') {
@@ -166,15 +194,16 @@ export class VisualRepresentationComponent {
       const numberOfGroups = op.operand2;
 
       for (let group = 0; group < numberOfGroups; group++) {
+        const elements = this.createElements(
+          elementsPerGroup,
+          'circle',
+          this.getGroupColor(group),
+          group,
+          group * elementsPerGroup,
+        );
         groups.push({
           groupIndex: group,
-          elements: this.createElements(
-            elementsPerGroup,
-            'circle',
-            this.getGroupColor(group),
-            group,
-            group * elementsPerGroup,
-          ),
+          rows: this.organizeInRows(elements),
         });
       }
     }
@@ -195,6 +224,58 @@ export class VisualRepresentationComponent {
       group,
       index: startIndex + i,
     }));
+  }
+
+  private organizeInRows(elements: VisualElement[]): RowOfElements[] {
+    const rows: RowOfElements[] = [];
+    const elementsPerRow = 10;
+
+    for (let i = 0; i < elements.length; i += elementsPerRow) {
+      const rowElements = elements.slice(i, i + elementsPerRow);
+      const count = rowElements.length;
+
+      rows.push({
+        elements: rowElements,
+        rowIndex: i / elementsPerRow,
+        count,
+        label: this.createRowLabel(count),
+      });
+    }
+
+    return rows;
+  }
+
+  private createRowLabel(count: number): string {
+    const roman = this.toRoman(count);
+    if (count === 10) {
+      return `10, ${roman}, 1da`;
+    } else {
+      return `${count}, ${roman}, ${count}u`;
+    }
+  }
+
+  private toRoman(num: number): string {
+    if (num === 0) return '0';
+
+    const romanNumerals: [number, string][] = [
+      [10, 'X'],
+      [9, 'IX'],
+      [5, 'V'],
+      [4, 'IV'],
+      [1, 'I'],
+    ];
+
+    let result = '';
+    let remaining = num;
+
+    for (const [value, numeral] of romanNumerals) {
+      while (remaining >= value) {
+        result += numeral;
+        remaining -= value;
+      }
+    }
+
+    return result;
   }
 
   private getGroupColor(groupIndex: number): string {
@@ -229,15 +310,6 @@ export class VisualRepresentationComponent {
     }
 
     return `${baseClasses} ${sizeClass} ${shapeClass}`;
-  }
-
-  getGroupClasses(): string {
-    if (this.displayMode() === 'total') {
-      // Modalità total: griglia con max 10 colonne
-      return 'grid grid-cols-10 gap-2 p-4';
-    }
-    // Modalità grouped: layout flessibile con bordo
-    return 'flex flex-wrap items-center justify-center gap-2 p-4 rounded-2xl border-3 md:min-h-24 min-w-12 min-h-20';
   }
 
   private getElementSize(): string {
