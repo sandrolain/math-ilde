@@ -13,6 +13,7 @@ import { HeaderComponent } from '../../components/header/header.component';
 import { OptionsControlComponent } from '../../components/options-control/options-control.component';
 import { VisualRepresentationComponent } from '../../components/visual-representation/visual-representation.component';
 import { FeedbackComponent } from '../../components/feedback/feedback.component';
+import { NumericKeyboardComponent } from '../../components/numeric-keyboard/numeric-keyboard.component';
 import { MathExerciseService } from '../../services/math-exercise.service';
 import { OptionsStorageService } from '../../services/options-storage.service';
 import { FeedbackService } from '../../services/feedback.service';
@@ -26,6 +27,7 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
     OptionsControlComponent,
     VisualRepresentationComponent,
     FeedbackComponent,
+    NumericKeyboardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -81,45 +83,60 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
                 </div>
               }
 
-              <!-- Input e verifica -->
+              <!-- Pseudo-input e verifica -->
               <div class="max-w-md mx-auto space-y-6">
                 <div class="flex items-center justify-center gap-4">
                   <div class="flex-1">
-                    <label for="addend1-input" class="field-label text-center block">
+                    <label for="addend1-display" class="field-label text-center block">
                       Primo addendo
                     </label>
-                    <input
-                      #addend1Input
-                      id="addend1-input"
-                      type="number"
-                      inputmode="numeric"
-                      [ngModel]="addend1Str()"
-                      (ngModelChange)="addend1Str.set($event)"
-                      (keyup.enter)="focusAddend2()"
-                      [class]="getInputClasses(1)"
-                      placeholder="?"
-                      aria-label="Inserisci il primo addendo"
-                    />
+                    <div
+                      id="addend1-display"
+                      class="pseudo-input"
+                      [class.active]="activeInput() === 1"
+                      [class.error]="showFeedback() && !isCorrect() && attemptCount() > 0"
+                      (click)="focusAddend1()"
+                      role="textbox"
+                      [attr.aria-label]="'Primo addendo: ' + (addend1Str() || 'vuoto')"
+                      tabindex="0"
+                    >
+                      <span class="pseudo-input-text">{{ addend1Str() || '?' }}</span>
+                      @if (activeInput() === 1) {
+                        <span class="cursor-blink"></span>
+                      }
+                    </div>
                   </div>
                   <div class="text-4xl pt-6">+</div>
                   <div class="flex-1">
-                    <label for="addend2-input" class="field-label text-center block">
+                    <label for="addend2-display" class="field-label text-center block">
                       Secondo addendo
                     </label>
-                    <input
-                      #addend2Input
-                      id="addend2-input"
-                      type="number"
-                      inputmode="numeric"
-                      [ngModel]="addend2Str()"
-                      (ngModelChange)="addend2Str.set($event)"
-                      (keyup.enter)="verifyAnswer()"
-                      [class]="getInputClasses(2)"
-                      placeholder="?"
-                      aria-label="Inserisci il secondo addendo"
-                    />
+                    <div
+                      id="addend2-display"
+                      class="pseudo-input"
+                      [class.active]="activeInput() === 2"
+                      [class.error]="showFeedback() && !isCorrect() && attemptCount() > 0"
+                      (click)="focusAddend2()"
+                      role="textbox"
+                      [attr.aria-label]="'Secondo addendo: ' + (addend2Str() || 'vuoto')"
+                      tabindex="0"
+                    >
+                      <span class="pseudo-input-text">{{ addend2Str() || '?' }}</span>
+                      @if (activeInput() === 2) {
+                        <span class="cursor-blink"></span>
+                      }
+                    </div>
                   </div>
                 </div>
+
+                <!-- Tastiera numerica -->
+                @if (activeInput() > 0) {
+                  <app-numeric-keyboard
+                    (numberPressed)="onNumberPressed($event)"
+                    (backspacePressed)="onBackspacePressed()"
+                    (clearPressed)="onClearPressed()"
+                  />
+                }
 
                 <button
                   (click)="verifyAnswer()"
@@ -149,6 +166,74 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
       :host {
         display: block;
       }
+
+      .pseudo-input {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        font-size: 1.75rem;
+        font-weight: 700;
+        text-align: center;
+        border: 3px solid var(--color-primary);
+        border-radius: 16px;
+        background: white;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .pseudo-input:hover {
+        border-color: #8ec5d6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(168, 216, 234, 0.3);
+      }
+
+      .pseudo-input.active {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+      }
+
+      .pseudo-input.error {
+        border-color: #ef4444;
+        background: #fee;
+      }
+
+      .pseudo-input-text {
+        color: var(--color-text-primary);
+      }
+
+      .cursor-blink {
+        display: inline-block;
+        width: 3px;
+        height: 1.75rem;
+        background: var(--color-text-primary);
+        margin-left: 0.25rem;
+        animation: blink 1s infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        49% {
+          opacity: 1;
+        }
+        50%,
+        100% {
+          opacity: 0;
+        }
+      }
+
+      @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+        :host ::ng-deep app-visual-representation .shape-element img {
+          width: 60px !important;
+          height: 60px !important;
+        }
+      }
     `,
   ],
 })
@@ -167,6 +252,7 @@ export class DecompositionComponent {
   attemptCount = signal<number>(0);
   showFeedback = signal<boolean>(false);
   feedbackType = signal<FeedbackType>('retry');
+  activeInput = signal<number>(1); // 1 o 2 per tracciare quale input è attivo, 0 per nessuno
 
   addend1Input = viewChild<ElementRef<HTMLInputElement>>('addend1Input');
   addend2Input = viewChild<ElementRef<HTMLInputElement>>('addend2Input');
@@ -205,17 +291,53 @@ export class DecompositionComponent {
     effect(() => {
       this.storageService.saveOptions(this.exerciseOptions());
     });
+  }
 
-    // Focus auto sulla pagina iniziale
-    effect(() => {
-      setTimeout(() => {
-        this.addend1Input()?.nativeElement.focus();
-      }, 0);
-    });
+  focusAddend1(): void {
+    this.activeInput.set(1);
   }
 
   focusAddend2(): void {
-    this.addend2Input()?.nativeElement.focus();
+    this.activeInput.set(2);
+  }
+
+  onNumberPressed(num: number): void {
+    const active = this.activeInput();
+    if (active === 1) {
+      const current = this.addend1Str();
+      if (current.length < 6) {
+        this.addend1Str.set(current + num);
+      }
+    } else if (active === 2) {
+      const current = this.addend2Str();
+      if (current.length < 6) {
+        this.addend2Str.set(current + num);
+      }
+    }
+  }
+
+  onBackspacePressed(): void {
+    const active = this.activeInput();
+    if (active === 1) {
+      const current = this.addend1Str();
+      if (current.length > 0) {
+        this.addend1Str.set(current.slice(0, -1));
+      }
+    } else if (active === 2) {
+      const current = this.addend2Str();
+      if (current.length > 0) {
+        this.addend2Str.set(current.slice(0, -1));
+      }
+    }
+  }
+
+  onClearPressed(): void {
+    const active = this.activeInput();
+    if (active === 1) {
+      this.addend1Str.set('');
+    } else if (active === 2) {
+      this.addend2Str.set('');
+    }
   }
 
   onOptionsChanged(newOptions: Partial<ExerciseOptions>): void {
@@ -255,16 +377,12 @@ export class DecompositionComponent {
     this.showFeedback.set(false);
     this.addend1Str.set('');
     this.addend2Str.set('');
-    setTimeout(() => {
-      this.addend1Input()?.nativeElement.focus();
-    }, 0);
+    this.activeInput.set(1);
   }
 
   nextExercise(): void {
     this.resetExercise();
-    setTimeout(() => {
-      this.addend1Input()?.nativeElement.focus();
-    }, 0);
+    this.activeInput.set(1);
   }
 
   private resetExercise(): void {
@@ -274,6 +392,7 @@ export class DecompositionComponent {
     this.attemptCount.set(0);
     this.showFeedback.set(false);
     this.feedbackType.set('retry');
+    this.activeInput.set(1);
   }
 
   getInputClasses(inputNumber: number): string {

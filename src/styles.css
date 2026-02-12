@@ -136,7 +136,7 @@ body {
 
   /* Cards */
   .card {
-    @apply bg-white rounded-3xl shadow-2xl p-8 md:p-12;
+    @apply bg-white rounded-3xl shadow-2xl p-4 md:p-12;
   }
 
   .card-interactive {
@@ -258,5 +258,14 @@ body {
       var(--color-bg-primary),
       var(--color-bg-secondary)
     );
+  }
+}
+
+/* Media Queries per Tablet Portrait */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  /* Riduci dimensioni delle immagini degli addendi su tablet portrait */
+  app-visual-representation .shape-element img {
+    width: 60px !important;
+    height: 60px !important;
   }
 }

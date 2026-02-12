@@ -30,8 +30,8 @@ interface RowOfElements {
             </div>
           }
           @for (row of group.rows; track row.rowIndex) {
-            <div class="flex items-center justify-between gap-4 w-full">
-              <div class="flex gap-2 items-center justify-center">
+            <div class="flex flex-wrap items-center justify-center gap-4 w-full">
+              <div class="flex gap-1 items-center justify-center">
                 @for (element of row.elements; track element.index) {
                   <div
                     [class]="getElementClasses(element)"
@@ -48,7 +48,7 @@ interface RowOfElements {
                 }
               </div>
               <div
-                class="text-lg md:text-xl font-bold min-w-30 flex flex-col items-center justify-center leading-none"
+                class="text-lg md:text-xl font-bold min-w-30 flex gap-4 items-center justify-center leading-none"
                 style="color: var(--color-text-primary);"
                 [innerHTML]="row.label"
               ></div>
@@ -356,7 +356,7 @@ export class VisualRepresentationComponent {
     const totalElements = this.getTotalElements();
 
     if (totalElements <= 20) {
-      return 'w-12 h-12 md:w-16 md:h-16';
+      return 'w-8 h-8 md:w-16 md:h-16';
     } else if (totalElements <= 50) {
       return 'w-8 h-8 md:w-10 md:h-10';
     } else if (totalElements <= 100) {

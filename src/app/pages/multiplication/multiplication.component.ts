@@ -13,6 +13,7 @@ import { HeaderComponent } from '../../components/header/header.component';
 import { OptionsControlComponent } from '../../components/options-control/options-control.component';
 import { VisualRepresentationComponent } from '../../components/visual-representation/visual-representation.component';
 import { FeedbackComponent } from '../../components/feedback/feedback.component';
+import { NumericKeyboardComponent } from '../../components/numeric-keyboard/numeric-keyboard.component';
 import { MathExerciseService } from '../../services/math-exercise.service';
 import { OptionsStorageService } from '../../services/options-storage.service';
 import { FeedbackService } from '../../services/feedback.service';
@@ -26,6 +27,7 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
     OptionsControlComponent,
     VisualRepresentationComponent,
     FeedbackComponent,
+    NumericKeyboardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -72,23 +74,36 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
                 </div>
               }
 
-              <!-- Input e verifica -->
+              <!-- Pseudo-input e verifica -->
 
               <div class="max-w-md mx-auto space-y-6">
                 <div>
-                  <label for="answer-input" class="field-label"> Qual è il risultato? </label>
-                  <input
-                    #answerInput
-                    id="answer-input"
-                    type="number"
-                    inputmode="numeric"
-                    [(ngModel)]="userAnswerStr"
-                    (keyup.enter)="verifyAnswer()"
-                    [class]="getInputClasses()"
-                    placeholder="?"
-                    aria-label="Inserisci il risultato dell'operazione"
-                  />
+                  <label for="answer-display" class="field-label"> Qual è il risultato? </label>
+                  <div
+                    id="answer-display"
+                    class="pseudo-input"
+                    [class.active]="inputFocused()"
+                    [class.error]="showFeedback() && !isCorrect() && attemptCount() > 0"
+                    (click)="focusInput()"
+                    role="textbox"
+                    [attr.aria-label]="'Risultato inserito: ' + (userAnswerStr() || 'vuoto')"
+                    tabindex="0"
+                  >
+                    <span class="pseudo-input-text">{{ userAnswerStr() || '?' }}</span>
+                    @if (inputFocused()) {
+                      <span class="cursor-blink"></span>
+                    }
+                  </div>
                 </div>
+
+                <!-- Tastiera numerica -->
+                @if (inputFocused()) {
+                  <app-numeric-keyboard
+                    (numberPressed)="onNumberPressed($event)"
+                    (backspacePressed)="onBackspacePressed()"
+                    (clearPressed)="onClearPressed()"
+                  />
+                }
 
                 <button
                   (click)="verifyAnswer()"
@@ -118,6 +133,74 @@ import type { MathOperation, FeedbackType, ExerciseOptions } from '../../types/e
       :host {
         display: block;
       }
+
+      .pseudo-input {
+        width: 100%;
+        padding: 1.25rem 1.5rem;
+        font-size: 2rem;
+        font-weight: 700;
+        text-align: center;
+        border: 3px solid var(--color-primary);
+        border-radius: 16px;
+        background: white;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .pseudo-input:hover {
+        border-color: #8ec5d6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(168, 216, 234, 0.3);
+      }
+
+      .pseudo-input.active {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+      }
+
+      .pseudo-input.error {
+        border-color: #ef4444;
+        background: #fee;
+      }
+
+      .pseudo-input-text {
+        color: var(--color-text-primary);
+      }
+
+      .cursor-blink {
+        display: inline-block;
+        width: 3px;
+        height: 2rem;
+        background: var(--color-text-primary);
+        margin-left: 0.25rem;
+        animation: blink 1s infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        49% {
+          opacity: 1;
+        }
+        50%,
+        100% {
+          opacity: 0;
+        }
+      }
+
+      @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+        :host ::ng-deep app-visual-representation .shape-element img {
+          width: 60px !important;
+          height: 60px !important;
+        }
+      }
     `,
   ],
 })
@@ -131,14 +214,15 @@ export class MultiplicationComponent {
   );
 
   currentOperation = signal<MathOperation>(this.generateNewOperation());
-  userAnswerStr = '';
+  userAnswerStr = signal<string>('');
   attemptCount = signal<number>(0);
   showFeedback = signal<boolean>(false);
   feedbackType = signal<FeedbackType>('retry');
+  inputFocused = signal<boolean>(true);
 
   answerInput = viewChild<ElementRef<HTMLInputElement>>('answerInput');
 
-  isCorrect = computed(() => Number(this.userAnswerStr) === this.currentOperation().result);
+  isCorrect = computed(() => Number(this.userAnswerStr()) === this.currentOperation().result);
   shouldShowAnswer = computed(() => this.attemptCount() >= 3 && !this.isCorrect());
 
   feedbackMessage = computed(() => {
@@ -155,13 +239,28 @@ export class MultiplicationComponent {
     effect(() => {
       this.storageService.saveOptions(this.exerciseOptions());
     });
+  }
 
-    // Focus auto sulla pagina iniziale
-    effect(() => {
-      setTimeout(() => {
-        this.answerInput()?.nativeElement.focus();
-      }, 0);
-    });
+  focusInput(): void {
+    this.inputFocused.set(true);
+  }
+
+  onNumberPressed(num: number): void {
+    const current = this.userAnswerStr();
+    if (current.length < 6) {
+      this.userAnswerStr.set(current + num);
+    }
+  }
+
+  onBackspacePressed(): void {
+    const current = this.userAnswerStr();
+    if (current.length > 0) {
+      this.userAnswerStr.set(current.slice(0, -1));
+    }
+  }
+
+  onClearPressed(): void {
+    this.userAnswerStr.set('');
   }
 
   onOptionsChanged(newOptions: Partial<ExerciseOptions>): void {
@@ -182,7 +281,7 @@ export class MultiplicationComponent {
   }
 
   verifyAnswer(): void {
-    if (!this.userAnswerStr) {
+    if (!this.userAnswerStr()) {
       return;
     }
 
@@ -202,25 +301,22 @@ export class MultiplicationComponent {
 
   closeFeedback(): void {
     this.showFeedback.set(false);
-    this.userAnswerStr = '';
-    setTimeout(() => {
-      this.answerInput()?.nativeElement.focus();
-    }, 0);
+    this.userAnswerStr.set('');
+    this.inputFocused.set(true);
   }
 
   nextExercise(): void {
     this.resetExercise();
-    setTimeout(() => {
-      this.answerInput()?.nativeElement.focus();
-    }, 0);
+    this.inputFocused.set(true);
   }
 
   private resetExercise(): void {
     this.currentOperation.set(this.generateNewOperation());
-    this.userAnswerStr = '';
+    this.userAnswerStr.set('');
     this.attemptCount.set(0);
     this.showFeedback.set(false);
     this.feedbackType.set('retry');
+    this.inputFocused.set(true);
   }
 
   getInputClasses(): string {
