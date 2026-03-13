@@ -28,6 +28,12 @@
   --color-shape-star: #f0e68c;
 }
 
+/* Font corsivo scolastico */
+.font-cursive {
+  font-family: 'Playwrite IT Trad', cursive;
+  font-weight: 400;
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--color-bg-primary);

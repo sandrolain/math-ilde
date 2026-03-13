@@ -30,6 +30,11 @@ export const routes: Routes = [
       import('./pages/decomposition/decomposition.component').then((m) => m.DecompositionComponent),
   },
   {
+    path: 'sillabe',
+    loadComponent: () =>
+      import('./pages/syllables/syllables.component').then((m) => m.SyllablesComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

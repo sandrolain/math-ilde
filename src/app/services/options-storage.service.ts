@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import type { StoredOptions, ExerciseOptions, SectionType } from '../types/exercise.types';
+import type { StoredOptions, ExerciseOptions, MathSectionType } from '../types/exercise.types';
 
 const STORAGE_KEY = 'math-ilde-options';
 
@@ -41,7 +41,7 @@ export class OptionsStorageService {
   /**
    * Ottiene le opzioni di default per una sezione
    */
-  getDefaultOptions(section: SectionType): ExerciseOptions {
+  getDefaultOptions(section: MathSectionType): ExerciseOptions {
     switch (section) {
       case 'addition-subtraction':
         return {
@@ -81,7 +81,7 @@ export class OptionsStorageService {
   /**
    * Carica le opzioni per una sezione specifica, con fallback ai default
    */
-  loadOptionsForSection(section: SectionType): ExerciseOptions {
+  loadOptionsForSection(section: MathSectionType): ExerciseOptions {
     const stored = this.loadOptions();
 
     if (stored && stored.section === section) {

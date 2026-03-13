@@ -10,7 +10,32 @@ export type OperationType =
 export type OperatorSymbol = '+' | '-' | '×' | '÷';
 export type DifficultyLevel = 10 | 50 | 100 | 1000;
 export type NumberOfOperands = 2 | 3;
-export type SectionType = 'addition-subtraction' | 'multiplication' | 'division' | 'decomposition';
+export type SectionType =
+  | 'addition-subtraction'
+  | 'multiplication'
+  | 'division'
+  | 'decomposition'
+  | 'syllables';
+
+export type SyllableMode =
+  | 'syllable'
+  | 'color'
+  | 'number'
+  | 'animal'
+  | 'name'
+  | 'things'
+  | 'sentence';
+
+export interface SyllableOptions {
+  section: 'syllables';
+  addS: boolean;
+  twoConsonants: boolean;
+  useDoubles: boolean;
+  showUppercase: boolean;
+  showLowercase: boolean;
+  showCursive: boolean;
+  activeMode: SyllableMode;
+}
 export type FeedbackType = 'success' | 'retry' | 'show-answer';
 export type ShapeType = 'circle' | 'square' | 'star';
 export type FruitType =
@@ -35,8 +60,14 @@ export interface MathOperation {
   result: number;
 }
 
+export type MathSectionType =
+  | 'addition-subtraction'
+  | 'multiplication'
+  | 'division'
+  | 'decomposition';
+
 export interface ExerciseOptions {
-  section: SectionType;
+  section: MathSectionType;
   operationType: OperationType;
   level: DifficultyLevel;
   numberOfOperands: NumberOfOperands;

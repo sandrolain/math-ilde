@@ -76,6 +76,21 @@ import { RouterLink } from '@angular/router';
             </h2>
             <p class="text-center text-[var(--color-text-secondary)]">Scomponi le somme</p>
           </a>
+
+          <!-- Sillabe -->
+          <a
+            routerLink="/sillabe"
+            class="card card-interactive card-section animate-[fadeIn_1.7s_ease-out]"
+            aria-label="Vai alla sezione Lettura a Sillabe"
+          >
+            <div class="text-6xl text-center mb-4">🔤</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Sillabe
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Leggi le parole sillaba per sillaba
+            </p>
+          </a>
         </div>
       </div>
     </div>
