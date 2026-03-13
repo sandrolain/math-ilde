@@ -91,6 +91,21 @@ import { RouterLink } from '@angular/router';
               Leggi le parole sillaba per sillaba
             </p>
           </a>
+
+          <!-- Tabelline -->
+          <a
+            routerLink="/tabelline"
+            class="card card-interactive card-section animate-[fadeIn_1.9s_ease-out]"
+            aria-label="Vai alla sezione Tabelline"
+          >
+            <div class="text-6xl text-center mb-4">📊</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Tabelline
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Ordina i risultati della tabellina
+            </p>
+          </a>
         </div>
       </div>
     </div>

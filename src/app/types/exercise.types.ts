@@ -15,7 +15,27 @@ export type SectionType =
   | 'multiplication'
   | 'division'
   | 'decomposition'
-  | 'syllables';
+  | 'syllables'
+  | 'times-table';
+
+export type TimesTableLength = 10 | 12 | 20;
+
+export interface TimesTableOptions {
+  section: 'times-table';
+  selectedMultiplier: number | null;
+  tableLength: TimesTableLength;
+}
+
+export interface TimesTableRow {
+  multiplier: number;
+  factor: number;
+  result: number;
+}
+
+export interface TimesTableExercise {
+  rows: TimesTableRow[];
+  shuffledResults: number[];
+}
 
 export type SyllableMode =
   | 'syllable'

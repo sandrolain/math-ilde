@@ -35,6 +35,11 @@ export const routes: Routes = [
       import('./pages/syllables/syllables.component').then((m) => m.SyllablesComponent),
   },
   {
+    path: 'tabelline',
+    loadComponent: () =>
+      import('./pages/times-table/times-table.component').then((m) => m.TimesTableComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },
