@@ -106,6 +106,21 @@ import { RouterLink } from '@angular/router';
               Ordina i risultati della tabellina
             </p>
           </a>
+
+          <!-- Sequenze Numeriche -->
+          <a
+            routerLink="/sequenze"
+            class="card card-interactive card-section animate-[fadeIn_2.1s_ease-out]"
+            aria-label="Vai alla sezione Sequenze Numeriche"
+          >
+            <div class="text-6xl text-center mb-4">🔢</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Sequenze
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Trova i numeri mancanti nella sequenza
+            </p>
+          </a>
         </div>
       </div>
     </div>

@@ -16,7 +16,33 @@ export type SectionType =
   | 'division'
   | 'decomposition'
   | 'syllables'
-  | 'times-table';
+  | 'times-table'
+  | 'sequences';
+
+// --- Sequenze Numeriche ---
+
+export type SequenceStepType = 'ascending' | 'descending' | 'multiples';
+export type SequenceLevel = 'easy' | 'medium' | 'hard';
+
+export interface SequenceOptions {
+  section: 'sequences';
+  stepType: SequenceStepType;
+  level: SequenceLevel;
+  numHoles: 1 | 2;
+}
+
+export interface SequenceElement {
+  value: number;
+  isHole: boolean;
+  index: number;
+}
+
+export interface SequenceExercise {
+  elements: SequenceElement[];
+  step: number;
+  stepType: SequenceStepType;
+  holeIndices: number[];
+}
 
 export type TimesTableLength = 10 | 12 | 20;
 

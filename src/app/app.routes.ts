@@ -40,6 +40,11 @@ export const routes: Routes = [
       import('./pages/times-table/times-table.component').then((m) => m.TimesTableComponent),
   },
   {
+    path: 'sequenze',
+    loadComponent: () =>
+      import('./pages/sequences/sequences.component').then((m) => m.SequencesComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },
