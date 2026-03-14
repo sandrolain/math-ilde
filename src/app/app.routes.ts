@@ -54,6 +54,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/clock/clock.component').then((m) => m.ClockComponent),
   },
   {
+    path: 'misure',
+    loadComponent: () =>
+      import('./pages/measurement/measurement.component').then((m) => m.MeasurementComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

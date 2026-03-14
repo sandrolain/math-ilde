@@ -19,7 +19,30 @@ export type SectionType =
   | 'times-table'
   | 'sequences'
   | 'fractions'
-  | 'clock';
+  | 'clock'
+  | 'measurements';
+
+// --- Misure e Conversioni ---
+
+export type MeasurementCategory = 'length' | 'weight' | 'capacity' | 'time' | 'mixed';
+export type MeasurementDirection = 'big-to-small' | 'small-to-big' | 'mixed';
+export type MeasurementLevel = 'easy' | 'medium' | 'hard';
+
+export interface MeasurementOptions {
+  section: 'measurements';
+  category: MeasurementCategory;
+  direction: MeasurementDirection;
+  level: MeasurementLevel;
+}
+
+export interface MeasurementExercise {
+  fromValue: number;
+  fromUnit: string;
+  toUnit: string;
+  correctAnswer: number;
+  category: Exclude<MeasurementCategory, 'mixed'>;
+  hint: string;
+}
 
 // --- Lettura dell'Orologio ---
 

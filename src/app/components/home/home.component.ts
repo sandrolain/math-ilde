@@ -151,6 +151,21 @@ import { RouterLink } from '@angular/router';
               Impara a leggere l'orologio
             </p>
           </a>
+
+          <!-- Misure e Conversioni -->
+          <a
+            routerLink="/misure"
+            class="card card-interactive card-section animate-[fadeIn_2.7s_ease-out]"
+            aria-label="Vai alla sezione Misure e Conversioni"
+          >
+            <div class="text-6xl text-center mb-4">📏</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Misure
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Converti le unità di misura
+            </p>
+          </a>
         </div>
       </div>
     </div>
