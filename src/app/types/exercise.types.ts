@@ -20,7 +20,35 @@ export type SectionType =
   | 'sequences'
   | 'fractions'
   | 'clock'
-  | 'measurements';
+  | 'measurements'
+  | 'comparison';
+
+// --- Confronto e Ordinamento ---
+
+export type ComparisonMode = 'symbol' | 'sort';
+export type ComparisonLevel = 10 | 100 | 1000;
+export type SortDirection = 'ascending' | 'descending';
+
+export interface ComparisonOptions {
+  section: 'comparison';
+  mode: ComparisonMode;
+  level: ComparisonLevel;
+  showBars: boolean;
+}
+
+export interface ComparisonExercise {
+  mode: ComparisonMode;
+  /** Modalità symbol: due numeri da confrontare */
+  numberA?: number;
+  numberB?: number;
+  /** Simbolo corretto: '<' | '>' | '=' */
+  correctSymbol?: '<' | '>' | '=';
+  /** Modalità sort: array di numeri da ordinare */
+  numbers?: number[];
+  sortDirection?: SortDirection;
+  /** Ordinamento corretto atteso */
+  sortedNumbers?: number[];
+}
 
 // --- Misure e Conversioni ---
 

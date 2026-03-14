@@ -59,6 +59,11 @@ export const routes: Routes = [
       import('./pages/measurement/measurement.component').then((m) => m.MeasurementComponent),
   },
   {
+    path: 'confronto',
+    loadComponent: () =>
+      import('./pages/comparison/comparison.component').then((m) => m.ComparisonComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

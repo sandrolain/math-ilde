@@ -166,6 +166,21 @@ import { RouterLink } from '@angular/router';
               Converti le unità di misura
             </p>
           </a>
+
+          <!-- Confronto e Ordinamento -->
+          <a
+            routerLink="/confronto"
+            class="card card-interactive card-section animate-[fadeIn_2.9s_ease-out]"
+            aria-label="Vai alla sezione Confronto e Ordinamento"
+          >
+            <div class="text-6xl text-center mb-4">⚖️</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Confronto
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Confronta e ordina i numeri
+            </p>
+          </a>
         </div>
       </div>
     </div>
