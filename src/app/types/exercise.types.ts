@@ -18,7 +18,27 @@ export type SectionType =
   | 'syllables'
   | 'times-table'
   | 'sequences'
-  | 'fractions';
+  | 'fractions'
+  | 'clock';
+
+// --- Lettura dell'Orologio ---
+
+export type ClockPrecision = 'hours' | 'half-quarters' | 'five-minutes';
+export type ClockMode = 'analog-to-digital' | 'digital-to-analog';
+
+export interface ClockOptions {
+  section: 'clock';
+  precision: ClockPrecision;
+  mode: ClockMode;
+}
+
+export interface ClockExercise {
+  hours: number; // 1–12
+  minutes: number; // 0, 30  |  0, 15, 30, 45  |  0, 5, 10, …, 55
+  /** Per digital-to-analog: 4 scelte, ciascuna come { hours, minutes } */
+  choices: Array<{ hours: number; minutes: number }>;
+  correctChoiceIndex: number;
+}
 
 // --- Frazioni Visive ---
 

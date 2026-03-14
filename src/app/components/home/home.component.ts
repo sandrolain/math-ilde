@@ -136,6 +136,21 @@ import { RouterLink } from '@angular/router';
               Scopri le frazioni con figure e torte
             </p>
           </a>
+
+          <!-- Lettura Orologio -->
+          <a
+            routerLink="/orologio"
+            class="card card-interactive card-section animate-[fadeIn_2.5s_ease-out]"
+            aria-label="Vai alla sezione Lettura dell'Orologio"
+          >
+            <div class="text-6xl text-center mb-4">⏰</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Orologio
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Impara a leggere l'orologio
+            </p>
+          </a>
         </div>
       </div>
     </div>

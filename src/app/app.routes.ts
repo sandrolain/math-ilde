@@ -50,6 +50,10 @@ export const routes: Routes = [
       import('./pages/fractions/fractions.component').then((m) => m.FractionsComponent),
   },
   {
+    path: 'orologio',
+    loadComponent: () => import('./pages/clock/clock.component').then((m) => m.ClockComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },
