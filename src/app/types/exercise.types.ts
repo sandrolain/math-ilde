@@ -17,7 +17,31 @@ export type SectionType =
   | 'decomposition'
   | 'syllables'
   | 'times-table'
-  | 'sequences';
+  | 'sequences'
+  | 'fractions';
+
+// --- Frazioni Visive ---
+
+export type FractionDenominatorGroup = 'halves' | 'thirds' | 'mixed';
+export type FractionFigureType = 'pie' | 'bar' | 'objects';
+export type FractionMode = 'figure-to-fraction' | 'fraction-to-figure';
+
+export interface FractionOptions {
+  section: 'fractions';
+  denominatorGroup: FractionDenominatorGroup;
+  figureType: FractionFigureType;
+  mode: FractionMode;
+}
+
+export interface FractionExercise {
+  numerator: number;
+  denominator: number;
+  figureType: FractionFigureType;
+  mode: FractionMode;
+  /** Opzioni multiple choice per modalità fraction-to-figure (indice corretto incluso) */
+  choices: Array<{ numerator: number; denominator: number }>;
+  correctChoiceIndex: number;
+}
 
 // --- Sequenze Numeriche ---
 

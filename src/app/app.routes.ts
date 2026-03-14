@@ -45,6 +45,11 @@ export const routes: Routes = [
       import('./pages/sequences/sequences.component').then((m) => m.SequencesComponent),
   },
   {
+    path: 'frazioni',
+    loadComponent: () =>
+      import('./pages/fractions/fractions.component').then((m) => m.FractionsComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

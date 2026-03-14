@@ -121,6 +121,21 @@ import { RouterLink } from '@angular/router';
               Trova i numeri mancanti nella sequenza
             </p>
           </a>
+
+          <!-- Frazioni Visive -->
+          <a
+            routerLink="/frazioni"
+            class="card card-interactive card-section animate-[fadeIn_2.3s_ease-out]"
+            aria-label="Vai alla sezione Frazioni Visive"
+          >
+            <div class="text-6xl text-center mb-4">🥧</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Frazioni
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Scopri le frazioni con figure e torte
+            </p>
+          </a>
         </div>
       </div>
     </div>
