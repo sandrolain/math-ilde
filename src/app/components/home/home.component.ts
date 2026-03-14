@@ -181,6 +181,21 @@ import { RouterLink } from '@angular/router';
               Confronta e ordina i numeri
             </p>
           </a>
+
+          <!-- Geometria di Base -->
+          <a
+            routerLink="/geometria"
+            class="card card-interactive card-section animate-[fadeIn_3.1s_ease-out]"
+            aria-label="Vai alla sezione Geometria di Base"
+          >
+            <div class="text-6xl text-center mb-4">🔺</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Geometria
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Scopri le figure geometriche
+            </p>
+          </a>
         </div>
       </div>
     </div>

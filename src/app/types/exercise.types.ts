@@ -21,7 +21,49 @@ export type SectionType =
   | 'fractions'
   | 'clock'
   | 'measurements'
-  | 'comparison';
+  | 'comparison'
+  | 'geometry';
+
+// --- Geometria di Base ---
+
+export type GeometryMode = 'recognize' | 'count-sides' | 'find-all';
+export type GeometryShapeId =
+  | 'circle'
+  | 'triangle'
+  | 'square'
+  | 'rectangle'
+  | 'rhombus'
+  | 'pentagon'
+  | 'hexagon'
+  | 'octagon';
+
+export interface GeometryOptions {
+  section: 'geometry';
+  mode: GeometryMode;
+  shapeGroup: 'basic' | 'advanced' | 'all';
+}
+
+export interface GeometryShapeItem {
+  id: GeometryShapeId;
+  /** Indice di variante visiva (rotazione, proporzioni) per distinguere visivamente istanze diverse */
+  variant: number;
+}
+
+export interface GeometryExercise {
+  mode: GeometryMode;
+  /** recognize / count-sides: figura protagonista */
+  targetShape?: GeometryShapeId;
+  targetVariant?: number;
+  /** recognize: 4 opzioni nome, indice risposta corretta */
+  nameChoices?: GeometryShapeId[];
+  correctNameIndex?: number;
+  /** count-sides: numero di lati corretto */
+  correctSides?: number;
+  /** find-all: griglia di 9 figure, tipo da trovare, indici corretti */
+  gridItems?: GeometryShapeItem[];
+  findType?: GeometryShapeId;
+  correctIndices?: number[];
+}
 
 // --- Confronto e Ordinamento ---
 

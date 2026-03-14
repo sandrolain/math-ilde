@@ -64,6 +64,11 @@ export const routes: Routes = [
       import('./pages/comparison/comparison.component').then((m) => m.ComparisonComponent),
   },
   {
+    path: 'geometria',
+    loadComponent: () =>
+      import('./pages/geometry/geometry.component').then((m) => m.GeometryComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },
