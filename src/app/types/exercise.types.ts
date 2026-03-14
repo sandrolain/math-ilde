@@ -43,7 +43,7 @@ export interface ClockExercise {
 // --- Frazioni Visive ---
 
 export type FractionDenominatorGroup = 'halves' | 'thirds' | 'mixed';
-export type FractionFigureType = 'pie' | 'bar' | 'objects';
+export type FractionFigureType = 'pie' | 'bar';
 export type FractionMode = 'figure-to-fraction' | 'fraction-to-figure';
 
 export interface FractionOptions {

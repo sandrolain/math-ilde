@@ -28,7 +28,9 @@ export class FractionOptionsStorageService {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        return { ...DEFAULT_OPTIONS, ...JSON.parse(stored) };
+        const loaded: FractionOptions = { ...DEFAULT_OPTIONS, ...JSON.parse(stored) };
+        if ((loaded.figureType as string) === 'objects') loaded.figureType = 'bar';
+        return loaded;
       }
     } catch {
       // localStorage non disponibile o dati corrotti

@@ -25,8 +25,6 @@ const PIE_FILLED_COLOR = '#a8d8ea';
 const PIE_EMPTY_COLOR = '#f0f4f8';
 const BAR_FILLED_COLOR = '#ffb6c1';
 const BAR_EMPTY_COLOR = '#f0f4f8';
-const OBJECT_FILLED_COLOR = '#b4e7ce';
-const OBJECT_EMPTY_COLOR = '#e2e8f0';
 
 // denominators per group
 const DENOM_MAP: Record<FractionDenominatorGroup, number[]> = {
@@ -154,17 +152,6 @@ function generateChoices(
                     />
                     <span class="option-label">📊 Barra</span>
                   </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="figureType"
-                      value="objects"
-                      class="option-input"
-                      [checked]="options().figureType === 'objects'"
-                      (change)="setFigureType('objects')"
-                    />
-                    <span class="option-label">⭕ Oggetti</span>
-                  </label>
                 </div>
               </div>
 
@@ -262,21 +249,6 @@ function generateChoices(
                         }
                       </div>
                     }
-
-                    @if (exercise().figureType === 'objects') {
-                      <div
-                        class="objects-grid"
-                        [style.--cols]="exercise().denominator"
-                        [attr.aria-label]="figureAriaLabel()"
-                      >
-                        @for (obj of objectCells(); track $index) {
-                          <div
-                            class="fraction-object"
-                            [style.background]="obj.filled ? objectFilledColor : objectEmptyColor"
-                          ></div>
-                        }
-                      </div>
-                    }
                   </div>
                 </div>
 
@@ -369,7 +341,7 @@ function generateChoices(
                       [attr.aria-pressed]="selectedChoice() === $index"
                     >
                       @if (exercise().figureType === 'pie') {
-                        <svg viewBox="0 0 100 100" width="80" height="80" aria-hidden="true">
+                        <svg viewBox="0 0 200 200" width="80" height="80" aria-hidden="true">
                           @for (
                             slice of getPieSlices(choice.numerator, choice.denominator);
                             track $index
@@ -396,26 +368,6 @@ function generateChoices(
                           }
                         </div>
                       }
-                      @if (exercise().figureType === 'objects') {
-                        <div
-                          class="objects-grid objects-sm"
-                          [style.--cols]="choice.denominator"
-                          aria-hidden="true"
-                        >
-                          @for (
-                            obj of getObjectCells(choice.numerator, choice.denominator);
-                            track $index
-                          ) {
-                            <div
-                              class="fraction-object fraction-object--sm"
-                              [style.background]="obj.filled ? objectFilledColor : objectEmptyColor"
-                            ></div>
-                          }
-                        </div>
-                      }
-                      <span class="choice-label">
-                        {{ choice.numerator }}/{{ choice.denominator }}
-                      </span>
                     </button>
                   }
                 </div>
@@ -478,31 +430,6 @@ function generateChoices(
         flex: 1;
         border-radius: 8px;
         transition: background 0.2s;
-      }
-
-      /* ---- Oggetti ---- */
-      .objects-grid {
-        display: grid;
-        grid-template-columns: repeat(var(--cols), 1fr);
-        gap: 6px;
-        padding: 4px;
-      }
-
-      .objects-sm {
-        gap: 4px;
-      }
-
-      .fraction-object {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        transition: background 0.2s;
-      }
-
-      .fraction-object--sm {
-        width: 18px;
-        height: 18px;
       }
 
       /* ---- Input frazione (figura→frazione) ---- */
@@ -627,12 +554,6 @@ function generateChoices(
         background: #fef2f2 !important;
         box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2) !important;
       }
-
-      .choice-label {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--color-text-secondary);
-      }
     `,
   ],
 })
@@ -641,8 +562,6 @@ export class FractionsComponent {
   readonly pieEmptyColor = PIE_EMPTY_COLOR;
   readonly barFilledColor = BAR_FILLED_COLOR;
   readonly barEmptyColor = BAR_EMPTY_COLOR;
-  readonly objectFilledColor = OBJECT_FILLED_COLOR;
-  readonly objectEmptyColor = OBJECT_EMPTY_COLOR;
 
   private readonly feedbackService = inject(FeedbackService);
   private readonly storageService = inject(FractionOptionsStorageService);
@@ -684,9 +603,6 @@ export class FractionsComponent {
   );
   barCells = computed(() =>
     this.getBarCells(this.exercise().numerator, this.exercise().denominator),
-  );
-  objectCells = computed(() =>
-    this.getObjectCells(this.exercise().numerator, this.exercise().denominator),
   );
 
   constructor() {
@@ -820,10 +736,6 @@ export class FractionsComponent {
   }
 
   getBarCells(numerator: number, denominator: number): Array<{ filled: boolean }> {
-    return Array.from({ length: denominator }, (_, i) => ({ filled: i < numerator }));
-  }
-
-  getObjectCells(numerator: number, denominator: number): Array<{ filled: boolean }> {
     return Array.from({ length: denominator }, (_, i) => ({ filled: i < numerator }));
   }
 
