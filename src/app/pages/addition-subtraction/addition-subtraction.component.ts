@@ -141,67 +141,6 @@ import type {
         display: block;
       }
 
-      .pseudo-input {
-        width: 100%;
-        padding: 1.25rem 1.5rem;
-        font-size: 2rem;
-        font-weight: 700;
-        text-align: center;
-        border: 3px solid var(--color-primary);
-        border-radius: 16px;
-        background: white;
-        color: var(--color-text-primary);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        min-height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      .pseudo-input:hover {
-        border-color: #8ec5d6;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(168, 216, 234, 0.3);
-      }
-
-      .pseudo-input.active {
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
-      }
-
-      .pseudo-input.error {
-        border-color: #ef4444;
-        background: #fee;
-      }
-
-      .pseudo-input-text {
-        color: var(--color-text-primary);
-      }
-
-      .cursor-blink {
-        display: inline-block;
-        width: 3px;
-        height: 2rem;
-        background: var(--color-text-primary);
-        margin-left: 0.25rem;
-        animation: blink 1s infinite;
-      }
-
-      @keyframes blink {
-        0%,
-        49% {
-          opacity: 1;
-        }
-        50%,
-        100% {
-          opacity: 0;
-        }
-      }
-
       /* Tablet portrait - riduci immagini */
       @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
         :host ::ng-deep app-visual-representation .shape-element img {

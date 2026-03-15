@@ -9,6 +9,8 @@ import {
 import { HeaderComponent } from '../../components/header/header.component';
 import { FeedbackComponent } from '../../components/feedback/feedback.component';
 import { NumericKeyboardComponent } from '../../components/numeric-keyboard/numeric-keyboard.component';
+import { SidebarOptionsComponent } from '../../components/sidebar-options/sidebar-options.component';
+import { rnd } from '../../utils/math-utils';
 import { FeedbackService } from '../../services/feedback.service';
 import { FractionOptionsStorageService } from '../../services/fraction-options-storage.service';
 import type {
@@ -33,10 +35,6 @@ const DENOM_MAP: Record<FractionDenominatorGroup, number[]> = {
   mixed: [2, 3, 4, 6, 8],
 };
 
-function rnd(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 function generateChoices(
   correct: { numerator: number; denominator: number },
   pool: number[],
@@ -60,7 +58,7 @@ function generateChoices(
 
 @Component({
   selector: 'app-fractions',
-  imports: [HeaderComponent, FeedbackComponent, NumericKeyboardComponent],
+  imports: [HeaderComponent, FeedbackComponent, NumericKeyboardComponent, SidebarOptionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
@@ -70,132 +68,105 @@ function generateChoices(
       <div class="container-main">
         <div class="layout-exercise">
           <!-- Sidebar opzioni -->
-          <aside class="sidebar">
-            <div class="lg:hidden flex justify-start mb-4">
-              <button
-                (click)="toggleMobileMenu()"
-                class="btn btn-primary"
-                [attr.aria-expanded]="mobileMenuOpen()"
-                aria-label="Apri opzioni"
-              >
-                {{ mobileMenuOpen() ? '✕ Chiudi' : '☰ Opzioni' }}
-              </button>
+          <app-sidebar-options [(open)]="mobileMenuOpen">
+            <!-- Modalità -->
+            <div class="space-y-2">
+              <span class="section-label">Modalità:</span>
+              <div class="space-y-2">
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="figure-to-fraction"
+                    class="option-input"
+                    [checked]="options().mode === 'figure-to-fraction'"
+                    (change)="setMode('figure-to-fraction')"
+                  />
+                  <span class="option-label">🖼️ → Scrivi la frazione</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="fraction-to-figure"
+                    class="option-input"
+                    [checked]="options().mode === 'fraction-to-figure'"
+                    (change)="setMode('fraction-to-figure')"
+                  />
+                  <span class="option-label">🔢 → Scegli la figura</span>
+                </label>
+              </div>
             </div>
 
-            <div
-              class="fixed lg:relative inset-y-0 left-0 w-80 bg-white shadow-lg p-6 space-y-6 z-40 transition-transform duration-300 lg:translate-x-0 max-h-screen overflow-y-auto"
-              [class.translate-x-[-100%]]="!mobileMenuOpen()"
-            >
-              <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-(--color-text-primary)">Opzioni</h3>
-                <button
-                  (click)="toggleMobileMenu()"
-                  class="lg:hidden text-2xl text-(--color-text-primary)"
-                  aria-label="Chiudi opzioni"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <!-- Modalità -->
+            <!-- Tipo di figura -->
+            <div class="space-y-2">
+              <span class="section-label">Tipo di figura:</span>
               <div class="space-y-2">
-                <span class="section-label">Modalità:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="figure-to-fraction"
-                      class="option-input"
-                      [checked]="options().mode === 'figure-to-fraction'"
-                      (change)="setMode('figure-to-fraction')"
-                    />
-                    <span class="option-label">🖼️ → Scrivi la frazione</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="fraction-to-figure"
-                      class="option-input"
-                      [checked]="options().mode === 'fraction-to-figure'"
-                      (change)="setMode('fraction-to-figure')"
-                    />
-                    <span class="option-label">🔢 → Scegli la figura</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Tipo di figura -->
-              <div class="space-y-2">
-                <span class="section-label">Tipo di figura:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="figureType"
-                      value="pie"
-                      class="option-input"
-                      [checked]="options().figureType === 'pie'"
-                      (change)="setFigureType('pie')"
-                    />
-                    <span class="option-label">🥧 Torta</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="figureType"
-                      value="bar"
-                      class="option-input"
-                      [checked]="options().figureType === 'bar'"
-                      (change)="setFigureType('bar')"
-                    />
-                    <span class="option-label">📊 Barra</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Denominatori -->
-              <div class="space-y-2">
-                <span class="section-label">Denominatori:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="denominatorGroup"
-                      value="halves"
-                      class="option-input"
-                      [checked]="options().denominatorGroup === 'halves'"
-                      (change)="setDenominatorGroup('halves')"
-                    />
-                    <span class="option-label">2, 4, 8</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="denominatorGroup"
-                      value="thirds"
-                      class="option-input"
-                      [checked]="options().denominatorGroup === 'thirds'"
-                      (change)="setDenominatorGroup('thirds')"
-                    />
-                    <span class="option-label">3, 6, 9</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="denominatorGroup"
-                      value="mixed"
-                      class="option-input"
-                      [checked]="options().denominatorGroup === 'mixed'"
-                      (change)="setDenominatorGroup('mixed')"
-                    />
-                    <span class="option-label">Misto (2, 3, 4, 6, 8)</span>
-                  </label>
-                </div>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="figureType"
+                    value="pie"
+                    class="option-input"
+                    [checked]="options().figureType === 'pie'"
+                    (change)="setFigureType('pie')"
+                  />
+                  <span class="option-label">🥧 Torta</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="figureType"
+                    value="bar"
+                    class="option-input"
+                    [checked]="options().figureType === 'bar'"
+                    (change)="setFigureType('bar')"
+                  />
+                  <span class="option-label">📊 Barra</span>
+                </label>
               </div>
             </div>
-          </aside>
+
+            <!-- Denominatori -->
+            <div class="space-y-2">
+              <span class="section-label">Denominatori:</span>
+              <div class="space-y-2">
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="denominatorGroup"
+                    value="halves"
+                    class="option-input"
+                    [checked]="options().denominatorGroup === 'halves'"
+                    (change)="setDenominatorGroup('halves')"
+                  />
+                  <span class="option-label">2, 4, 8</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="denominatorGroup"
+                    value="thirds"
+                    class="option-input"
+                    [checked]="options().denominatorGroup === 'thirds'"
+                    (change)="setDenominatorGroup('thirds')"
+                  />
+                  <span class="option-label">3, 6, 9</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="denominatorGroup"
+                    value="mixed"
+                    class="option-input"
+                    [checked]="options().denominatorGroup === 'mixed'"
+                    (change)="setDenominatorGroup('mixed')"
+                  />
+                  <span class="option-label">Misto (2, 3, 4, 6, 8)</span>
+                </label>
+              </div>
+            </div>
+          </app-sidebar-options>
 
           <!-- Area esercizio -->
           <main class="exercise-area">
@@ -690,10 +661,6 @@ export class FractionsComponent {
     this.attemptCount.set(0);
     this.showFeedback.set(false);
     this.feedbackType.set('retry');
-  }
-
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen.update((v) => !v);
   }
 
   setMode(mode: FractionMode): void {

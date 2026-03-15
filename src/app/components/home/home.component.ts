@@ -6,7 +6,7 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   template: `
     <div class="bg-app flex items-center justify-center p-4">
-      <div class="max-w-4xl w-full">
+      <div class="max-w-5xl w-full">
         <h1 class="page-title">Math-ilde</h1>
         <p
           class="text-xl text-center mb-12 text-[var(--color-text-secondary)] animate-[fadeIn_0.7s_ease-out]"
@@ -14,8 +14,7 @@ import { RouterLink } from '@angular/router';
           Impara la matematica divertendoti!
         </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Addizioni e Sottrazioni -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <a
             routerLink="/addizioni-sottrazioni"
             class="card card-interactive card-section animate-[fadeIn_0.9s_ease-out]"
@@ -204,8 +203,7 @@ import { RouterLink } from '@angular/router';
         >
           🎮 Giochi
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Memory Matematico -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <a
             routerLink="/giochi/memory"
             class="card card-interactive card-section animate-[fadeIn_3.5s_ease-out]"
@@ -227,6 +225,17 @@ import { RouterLink } from '@angular/router';
     `
       :host {
         display: block;
+      }
+      :host .card-section > div:first-child {
+        font-size: 2.25rem;
+        margin-bottom: 0.5rem;
+      }
+      :host .card-section h2 {
+        font-size: 1.125rem;
+        line-height: 1.5rem;
+      }
+      :host .card-section p {
+        font-size: 0.875rem;
       }
     `,
   ],

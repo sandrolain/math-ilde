@@ -10,6 +10,8 @@ import { NgTemplateOutlet } from '@angular/common';
 import { HeaderComponent } from '../../components/header/header.component';
 import { FeedbackComponent } from '../../components/feedback/feedback.component';
 import { NumericKeyboardComponent } from '../../components/numeric-keyboard/numeric-keyboard.component';
+import { SidebarOptionsComponent } from '../../components/sidebar-options/sidebar-options.component';
+import { rnd } from '../../utils/math-utils';
 import { FeedbackService } from '../../services/feedback.service';
 import { ClockOptionsStorageService } from '../../services/clock-options-storage.service';
 import type {
@@ -21,10 +23,6 @@ import type {
 } from '../../types/exercise.types';
 
 // ---- helpers ----
-
-function rnd(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
 
 function minutePool(precision: ClockPrecision): number[] {
   if (precision === 'hours') return [0];
@@ -83,7 +81,13 @@ function handEnd(angleDeg: number, length: number): { x: number; y: number } {
 
 @Component({
   selector: 'app-clock',
-  imports: [HeaderComponent, FeedbackComponent, NumericKeyboardComponent, NgTemplateOutlet],
+  imports: [
+    HeaderComponent,
+    FeedbackComponent,
+    NumericKeyboardComponent,
+    NgTemplateOutlet,
+    SidebarOptionsComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
@@ -93,103 +97,76 @@ function handEnd(angleDeg: number, length: number): { x: number; y: number } {
       <div class="container-main">
         <div class="layout-exercise">
           <!-- Sidebar opzioni -->
-          <aside class="sidebar">
-            <div class="lg:hidden flex justify-start mb-4">
-              <button
-                (click)="toggleMobileMenu()"
-                class="btn btn-primary"
-                [attr.aria-expanded]="mobileMenuOpen()"
-                aria-label="Apri opzioni"
-              >
-                {{ mobileMenuOpen() ? '✕ Chiudi' : '☰ Opzioni' }}
-              </button>
+          <app-sidebar-options [(open)]="mobileMenuOpen">
+            <!-- Modalità -->
+            <div class="space-y-2">
+              <span class="section-label">Modalità:</span>
+              <div class="space-y-2">
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="analog-to-digital"
+                    class="option-input"
+                    [checked]="options().mode === 'analog-to-digital'"
+                    (change)="setMode('analog-to-digital')"
+                  />
+                  <span class="option-label">🕐 → Scrivi l'orario</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="digital-to-analog"
+                    class="option-input"
+                    [checked]="options().mode === 'digital-to-analog'"
+                    (change)="setMode('digital-to-analog')"
+                  />
+                  <span class="option-label">🔢 → Scegli l'orologio</span>
+                </label>
+              </div>
             </div>
 
-            <div
-              class="fixed lg:relative inset-y-0 left-0 w-80 bg-white shadow-lg p-6 space-y-6 z-40 transition-transform duration-300 lg:translate-x-0 max-h-screen overflow-y-auto"
-              [class.translate-x-[-100%]]="!mobileMenuOpen()"
-            >
-              <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-(--color-text-primary)">Opzioni</h3>
-                <button
-                  (click)="toggleMobileMenu()"
-                  class="lg:hidden text-2xl text-(--color-text-primary)"
-                  aria-label="Chiudi opzioni"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <!-- Modalità -->
+            <!-- Precisione -->
+            <div class="space-y-2">
+              <span class="section-label">Precisione:</span>
               <div class="space-y-2">
-                <span class="section-label">Modalità:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="analog-to-digital"
-                      class="option-input"
-                      [checked]="options().mode === 'analog-to-digital'"
-                      (change)="setMode('analog-to-digital')"
-                    />
-                    <span class="option-label">🕐 → Scrivi l'orario</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="digital-to-analog"
-                      class="option-input"
-                      [checked]="options().mode === 'digital-to-analog'"
-                      (change)="setMode('digital-to-analog')"
-                    />
-                    <span class="option-label">🔢 → Scegli l'orologio</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Precisione -->
-              <div class="space-y-2">
-                <span class="section-label">Precisione:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="precision"
-                      value="hours"
-                      class="option-input"
-                      [checked]="options().precision === 'hours'"
-                      (change)="setPrecision('hours')"
-                    />
-                    <span class="option-label">🟢 Solo ore intere</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="precision"
-                      value="half-quarters"
-                      class="option-input"
-                      [checked]="options().precision === 'half-quarters'"
-                      (change)="setPrecision('half-quarters')"
-                    />
-                    <span class="option-label">🟡 Mezze ore e quarti</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="precision"
-                      value="five-minutes"
-                      class="option-input"
-                      [checked]="options().precision === 'five-minutes'"
-                      (change)="setPrecision('five-minutes')"
-                    />
-                    <span class="option-label">🔴 Multipli di 5 minuti</span>
-                  </label>
-                </div>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="precision"
+                    value="hours"
+                    class="option-input"
+                    [checked]="options().precision === 'hours'"
+                    (change)="setPrecision('hours')"
+                  />
+                  <span class="option-label">🟢 Solo ore intere</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="precision"
+                    value="half-quarters"
+                    class="option-input"
+                    [checked]="options().precision === 'half-quarters'"
+                    (change)="setPrecision('half-quarters')"
+                  />
+                  <span class="option-label">🟡 Mezze ore e quarti</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="precision"
+                    value="five-minutes"
+                    class="option-input"
+                    [checked]="options().precision === 'five-minutes'"
+                    (change)="setPrecision('five-minutes')"
+                  />
+                  <span class="option-label">🔴 Multipli di 5 minuti</span>
+                </label>
               </div>
             </div>
-          </aside>
+          </app-sidebar-options>
 
           <!-- Area esercizio -->
           <main class="exercise-area">
@@ -683,10 +660,6 @@ export class ClockComponent {
     this.attemptCount.set(0);
     this.showFeedback.set(false);
     this.feedbackType.set('retry');
-  }
-
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen.update((v) => !v);
   }
 
   setMode(mode: ClockMode): void {

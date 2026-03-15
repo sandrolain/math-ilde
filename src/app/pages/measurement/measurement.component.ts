@@ -9,6 +9,8 @@ import {
 import { HeaderComponent } from '../../components/header/header.component';
 import { FeedbackComponent } from '../../components/feedback/feedback.component';
 import { NumericKeyboardComponent } from '../../components/numeric-keyboard/numeric-keyboard.component';
+import { SidebarOptionsComponent } from '../../components/sidebar-options/sidebar-options.component';
+import { rnd } from '../../utils/math-utils';
 import { FeedbackService } from '../../services/feedback.service';
 import { MeasurementOptionsStorageService } from '../../services/measurement-options-storage.service';
 import type {
@@ -67,10 +69,6 @@ const CATEGORY_EMOJIS: Record<Exclude<MeasurementCategory, 'mixed'>, string> = {
   capacity: '💧',
   time: '⏱️',
 };
-
-function rnd(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
 
 function generateExercise(opts: MeasurementOptions): MeasurementExercise {
   const catKeys: Array<Exclude<MeasurementCategory, 'mixed'>> = [
@@ -156,7 +154,7 @@ function generateExercise(opts: MeasurementOptions): MeasurementExercise {
 
 @Component({
   selector: 'app-measurement',
-  imports: [HeaderComponent, FeedbackComponent, NumericKeyboardComponent],
+  imports: [HeaderComponent, FeedbackComponent, NumericKeyboardComponent, SidebarOptionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
@@ -166,176 +164,149 @@ function generateExercise(opts: MeasurementOptions): MeasurementExercise {
       <div class="container-main">
         <div class="layout-exercise">
           <!-- Sidebar opzioni -->
-          <aside class="sidebar">
-            <div class="lg:hidden flex justify-start mb-4">
-              <button
-                (click)="toggleMobileMenu()"
-                class="btn btn-primary"
-                [attr.aria-expanded]="mobileMenuOpen()"
-                aria-label="Apri opzioni"
-              >
-                {{ mobileMenuOpen() ? '✕ Chiudi' : '☰ Opzioni' }}
-              </button>
+          <app-sidebar-options [(open)]="mobileMenuOpen">
+            <!-- Categoria -->
+            <div class="space-y-2">
+              <span class="section-label">Categoria:</span>
+              <div class="space-y-2">
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="category"
+                    value="length"
+                    class="option-input"
+                    [checked]="options().category === 'length'"
+                    (change)="setCategory('length')"
+                  />
+                  <span class="option-label">📏 Lunghezza</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="category"
+                    value="weight"
+                    class="option-input"
+                    [checked]="options().category === 'weight'"
+                    (change)="setCategory('weight')"
+                  />
+                  <span class="option-label">⚖️ Peso</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="category"
+                    value="capacity"
+                    class="option-input"
+                    [checked]="options().category === 'capacity'"
+                    (change)="setCategory('capacity')"
+                  />
+                  <span class="option-label">💧 Capacità</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="category"
+                    value="time"
+                    class="option-input"
+                    [checked]="options().category === 'time'"
+                    (change)="setCategory('time')"
+                  />
+                  <span class="option-label">⏱️ Tempo</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="category"
+                    value="mixed"
+                    class="option-input"
+                    [checked]="options().category === 'mixed'"
+                    (change)="setCategory('mixed')"
+                  />
+                  <span class="option-label">🎲 Misto</span>
+                </label>
+              </div>
             </div>
 
-            <div
-              class="fixed lg:relative inset-y-0 left-0 w-80 bg-white shadow-lg p-6 space-y-6 z-40 transition-transform duration-300 lg:translate-x-0 max-h-screen overflow-y-auto"
-              [class.translate-x-[-100%]]="!mobileMenuOpen()"
-            >
-              <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-(--color-text-primary)">Opzioni</h3>
-                <button
-                  (click)="toggleMobileMenu()"
-                  class="lg:hidden text-2xl text-(--color-text-primary)"
-                  aria-label="Chiudi opzioni"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <!-- Categoria -->
+            <!-- Direzione -->
+            <div class="space-y-2">
+              <span class="section-label">Direzione:</span>
               <div class="space-y-2">
-                <span class="section-label">Categoria:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="category"
-                      value="length"
-                      class="option-input"
-                      [checked]="options().category === 'length'"
-                      (change)="setCategory('length')"
-                    />
-                    <span class="option-label">📏 Lunghezza</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="category"
-                      value="weight"
-                      class="option-input"
-                      [checked]="options().category === 'weight'"
-                      (change)="setCategory('weight')"
-                    />
-                    <span class="option-label">⚖️ Peso</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="category"
-                      value="capacity"
-                      class="option-input"
-                      [checked]="options().category === 'capacity'"
-                      (change)="setCategory('capacity')"
-                    />
-                    <span class="option-label">💧 Capacità</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="category"
-                      value="time"
-                      class="option-input"
-                      [checked]="options().category === 'time'"
-                      (change)="setCategory('time')"
-                    />
-                    <span class="option-label">⏱️ Tempo</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="category"
-                      value="mixed"
-                      class="option-input"
-                      [checked]="options().category === 'mixed'"
-                      (change)="setCategory('mixed')"
-                    />
-                    <span class="option-label">🎲 Misto</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Direzione -->
-              <div class="space-y-2">
-                <span class="section-label">Direzione:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="direction"
-                      value="big-to-small"
-                      class="option-input"
-                      [checked]="options().direction === 'big-to-small'"
-                      (change)="setDirection('big-to-small')"
-                    />
-                    <span class="option-label">📉 Grande → Piccola</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="direction"
-                      value="small-to-big"
-                      class="option-input"
-                      [checked]="options().direction === 'small-to-big'"
-                      (change)="setDirection('small-to-big')"
-                    />
-                    <span class="option-label">📈 Piccola → Grande</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="direction"
-                      value="mixed"
-                      class="option-input"
-                      [checked]="options().direction === 'mixed'"
-                      (change)="setDirection('mixed')"
-                    />
-                    <span class="option-label">🔀 Mista</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Livello -->
-              <div class="space-y-2">
-                <span class="section-label">Livello:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="level"
-                      value="easy"
-                      class="option-input"
-                      [checked]="options().level === 'easy'"
-                      (change)="setLevel('easy')"
-                    />
-                    <span class="option-label">⭐ Facile</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="level"
-                      value="medium"
-                      class="option-input"
-                      [checked]="options().level === 'medium'"
-                      (change)="setLevel('medium')"
-                    />
-                    <span class="option-label">⭐⭐ Medio</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="level"
-                      value="hard"
-                      class="option-input"
-                      [checked]="options().level === 'hard'"
-                      (change)="setLevel('hard')"
-                    />
-                    <span class="option-label">⭐⭐⭐ Difficile</span>
-                  </label>
-                </div>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="direction"
+                    value="big-to-small"
+                    class="option-input"
+                    [checked]="options().direction === 'big-to-small'"
+                    (change)="setDirection('big-to-small')"
+                  />
+                  <span class="option-label">📉 Grande → Piccola</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="direction"
+                    value="small-to-big"
+                    class="option-input"
+                    [checked]="options().direction === 'small-to-big'"
+                    (change)="setDirection('small-to-big')"
+                  />
+                  <span class="option-label">📈 Piccola → Grande</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="direction"
+                    value="mixed"
+                    class="option-input"
+                    [checked]="options().direction === 'mixed'"
+                    (change)="setDirection('mixed')"
+                  />
+                  <span class="option-label">🔀 Mista</span>
+                </label>
               </div>
             </div>
-          </aside>
+
+            <!-- Livello -->
+            <div class="space-y-2">
+              <span class="section-label">Livello:</span>
+              <div class="space-y-2">
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="level"
+                    value="easy"
+                    class="option-input"
+                    [checked]="options().level === 'easy'"
+                    (change)="setLevel('easy')"
+                  />
+                  <span class="option-label">⭐ Facile</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="level"
+                    value="medium"
+                    class="option-input"
+                    [checked]="options().level === 'medium'"
+                    (change)="setLevel('medium')"
+                  />
+                  <span class="option-label">⭐⭐ Medio</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="level"
+                    value="hard"
+                    class="option-input"
+                    [checked]="options().level === 'hard'"
+                    (change)="setLevel('hard')"
+                  />
+                  <span class="option-label">⭐⭐⭐ Difficile</span>
+                </label>
+              </div>
+            </div>
+          </app-sidebar-options>
 
           <!-- Area esercizio -->
           <main class="exercise-area">
@@ -597,10 +568,6 @@ export class MeasurementComponent {
     this.attemptCount.set(0);
     this.showFeedback.set(false);
     this.feedbackType.set('retry');
-  }
-
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen.update((v) => !v);
   }
 
   setCategory(category: MeasurementCategory): void {

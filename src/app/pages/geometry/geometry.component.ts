@@ -10,6 +10,8 @@ import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { HeaderComponent } from '../../components/header/header.component';
 import { FeedbackComponent } from '../../components/feedback/feedback.component';
 import { NumericKeyboardComponent } from '../../components/numeric-keyboard/numeric-keyboard.component';
+import { SidebarOptionsComponent } from '../../components/sidebar-options/sidebar-options.component';
+import { rnd, shuffle } from '../../utils/math-utils';
 import { FeedbackService } from '../../services/feedback.service';
 import { GeometryOptionsStorageService } from '../../services/geometry-options-storage.service';
 import type {
@@ -101,19 +103,6 @@ const GRID_COLORS = [
   '#ffd6e7',
 ];
 
-function rnd(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = rnd(0, i);
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
 function getPool(group: GeometryOptions['shapeGroup']): GeometryShapeId[] {
   if (group === 'basic') return BASIC_SHAPES;
   if (group === 'advanced') return ADVANCED_SHAPES;
@@ -183,7 +172,7 @@ const VARIANT_ROTATIONS = [0, 15, -15, 30];
 
 @Component({
   selector: 'app-geometry',
-  imports: [HeaderComponent, FeedbackComponent, NumericKeyboardComponent],
+  imports: [HeaderComponent, FeedbackComponent, NumericKeyboardComponent, SidebarOptionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
@@ -193,114 +182,87 @@ const VARIANT_ROTATIONS = [0, 15, -15, 30];
       <div class="container-main">
         <div class="layout-exercise">
           <!-- Sidebar opzioni -->
-          <aside class="sidebar">
-            <div class="lg:hidden flex justify-start mb-4">
-              <button
-                (click)="toggleMobileMenu()"
-                class="btn btn-primary"
-                [attr.aria-expanded]="mobileMenuOpen()"
-                aria-label="Apri opzioni"
-              >
-                {{ mobileMenuOpen() ? '✕ Chiudi' : '☰ Opzioni' }}
-              </button>
+          <app-sidebar-options [(open)]="mobileMenuOpen">
+            <!-- Modalità -->
+            <div class="space-y-2">
+              <span class="section-label">Modalità:</span>
+              <div class="space-y-2">
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="recognize"
+                    class="option-input"
+                    [checked]="options().mode === 'recognize'"
+                    (change)="setMode('recognize')"
+                  />
+                  <span class="option-label">🔍 Riconosci la figura</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="count-sides"
+                    class="option-input"
+                    [checked]="options().mode === 'count-sides'"
+                    (change)="setMode('count-sides')"
+                  />
+                  <span class="option-label">🔢 Conta i lati</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="find-all"
+                    class="option-input"
+                    [checked]="options().mode === 'find-all'"
+                    (change)="setMode('find-all')"
+                  />
+                  <span class="option-label">🎯 Trova le figure</span>
+                </label>
+              </div>
             </div>
 
-            <div
-              class="fixed lg:relative inset-y-0 left-0 w-80 bg-white shadow-lg p-6 space-y-6 z-40 transition-transform duration-300 lg:translate-x-0 max-h-screen overflow-y-auto"
-              [class.translate-x-[-100%]]="!mobileMenuOpen()"
-            >
-              <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-(--color-text-primary)">Opzioni</h3>
-                <button
-                  (click)="toggleMobileMenu()"
-                  class="lg:hidden text-2xl text-(--color-text-primary)"
-                  aria-label="Chiudi opzioni"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <!-- Modalità -->
+            <!-- Gruppo figure -->
+            <div class="space-y-2">
+              <span class="section-label">Figure:</span>
               <div class="space-y-2">
-                <span class="section-label">Modalità:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="recognize"
-                      class="option-input"
-                      [checked]="options().mode === 'recognize'"
-                      (change)="setMode('recognize')"
-                    />
-                    <span class="option-label">🔍 Riconosci la figura</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="count-sides"
-                      class="option-input"
-                      [checked]="options().mode === 'count-sides'"
-                      (change)="setMode('count-sides')"
-                    />
-                    <span class="option-label">🔢 Conta i lati</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="find-all"
-                      class="option-input"
-                      [checked]="options().mode === 'find-all'"
-                      (change)="setMode('find-all')"
-                    />
-                    <span class="option-label">🎯 Trova le figure</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Gruppo figure -->
-              <div class="space-y-2">
-                <span class="section-label">Figure:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="shapeGroup"
-                      value="basic"
-                      class="option-input"
-                      [checked]="options().shapeGroup === 'basic'"
-                      (change)="setShapeGroup('basic')"
-                    />
-                    <span class="option-label">⭐ Semplici</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="shapeGroup"
-                      value="advanced"
-                      class="option-input"
-                      [checked]="options().shapeGroup === 'advanced'"
-                      (change)="setShapeGroup('advanced')"
-                    />
-                    <span class="option-label">⭐⭐ Avanzate</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="shapeGroup"
-                      value="all"
-                      class="option-input"
-                      [checked]="options().shapeGroup === 'all'"
-                      (change)="setShapeGroup('all')"
-                    />
-                    <span class="option-label">⭐⭐⭐ Tutte</span>
-                  </label>
-                </div>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="shapeGroup"
+                    value="basic"
+                    class="option-input"
+                    [checked]="options().shapeGroup === 'basic'"
+                    (change)="setShapeGroup('basic')"
+                  />
+                  <span class="option-label">⭐ Semplici</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="shapeGroup"
+                    value="advanced"
+                    class="option-input"
+                    [checked]="options().shapeGroup === 'advanced'"
+                    (change)="setShapeGroup('advanced')"
+                  />
+                  <span class="option-label">⭐⭐ Avanzate</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="shapeGroup"
+                    value="all"
+                    class="option-input"
+                    [checked]="options().shapeGroup === 'all'"
+                    (change)="setShapeGroup('all')"
+                  />
+                  <span class="option-label">⭐⭐⭐ Tutte</span>
+                </label>
               </div>
             </div>
-          </aside>
+          </app-sidebar-options>
 
           <!-- Area esercizio -->
           <main class="exercise-area">
@@ -832,10 +794,6 @@ export class GeometryComponent {
     this.attemptCount.set(0);
     this.showFeedback.set(false);
     this.feedbackType.set('retry');
-  }
-
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen.update((v) => !v);
   }
 
   setMode(mode: GeometryMode): void {

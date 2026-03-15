@@ -9,6 +9,7 @@ import {
 import { HeaderComponent } from '../../components/header/header.component';
 import { FeedbackComponent } from '../../components/feedback/feedback.component';
 import { NumericKeyboardComponent } from '../../components/numeric-keyboard/numeric-keyboard.component';
+import { SidebarOptionsComponent } from '../../components/sidebar-options/sidebar-options.component';
 import { FeedbackService } from '../../services/feedback.service';
 import { SequenceOptionsStorageService } from '../../services/sequence-options-storage.service';
 import type {
@@ -25,7 +26,7 @@ const SEQUENCE_LENGTH = 5;
 
 @Component({
   selector: 'app-sequences',
-  imports: [HeaderComponent, FeedbackComponent, NumericKeyboardComponent],
+  imports: [HeaderComponent, FeedbackComponent, NumericKeyboardComponent, SidebarOptionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
@@ -35,143 +36,116 @@ const SEQUENCE_LENGTH = 5;
       <div class="container-main">
         <div class="layout-exercise">
           <!-- Sidebar opzioni -->
-          <aside class="sidebar">
-            <div class="lg:hidden flex justify-start mb-4">
-              <button
-                (click)="toggleMobileMenu()"
-                class="btn btn-primary"
-                [attr.aria-expanded]="mobileMenuOpen()"
-                aria-label="Apri opzioni"
-              >
-                {{ mobileMenuOpen() ? '✕ Chiudi' : '☰ Opzioni' }}
-              </button>
+          <app-sidebar-options [(open)]="mobileMenuOpen">
+            <!-- Tipo di sequenza -->
+            <div class="space-y-2">
+              <span class="section-label">Tipo di sequenza:</span>
+              <div class="space-y-2">
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="stepType"
+                    value="ascending"
+                    class="option-input"
+                    [checked]="options().stepType === 'ascending'"
+                    (change)="setStepType('ascending')"
+                  />
+                  <span class="option-label">📈 Crescente</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="stepType"
+                    value="descending"
+                    class="option-input"
+                    [checked]="options().stepType === 'descending'"
+                    (change)="setStepType('descending')"
+                  />
+                  <span class="option-label">📉 Decrescente</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="stepType"
+                    value="multiples"
+                    class="option-input"
+                    [checked]="options().stepType === 'multiples'"
+                    (change)="setStepType('multiples')"
+                  />
+                  <span class="option-label">✖️ Multipli / Tabelline</span>
+                </label>
+              </div>
             </div>
 
-            <div
-              class="fixed lg:relative inset-y-0 left-0 w-80 bg-white shadow-lg p-6 space-y-6 z-40 transition-transform duration-300 lg:translate-x-0 max-h-screen overflow-y-auto"
-              [class.translate-x-[-100%]]="!mobileMenuOpen()"
-            >
-              <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-(--color-text-primary)">Opzioni</h3>
-                <button
-                  (click)="toggleMobileMenu()"
-                  class="lg:hidden text-2xl text-(--color-text-primary)"
-                  aria-label="Chiudi opzioni"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <!-- Tipo di sequenza -->
+            <!-- Livello -->
+            <div class="space-y-2">
+              <span class="section-label">Livello:</span>
               <div class="space-y-2">
-                <span class="section-label">Tipo di sequenza:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="stepType"
-                      value="ascending"
-                      class="option-input"
-                      [checked]="options().stepType === 'ascending'"
-                      (change)="setStepType('ascending')"
-                    />
-                    <span class="option-label">📈 Crescente</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="stepType"
-                      value="descending"
-                      class="option-input"
-                      [checked]="options().stepType === 'descending'"
-                      (change)="setStepType('descending')"
-                    />
-                    <span class="option-label">📉 Decrescente</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="stepType"
-                      value="multiples"
-                      class="option-input"
-                      [checked]="options().stepType === 'multiples'"
-                      (change)="setStepType('multiples')"
-                    />
-                    <span class="option-label">✖️ Multipli / Tabelline</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Livello -->
-              <div class="space-y-2">
-                <span class="section-label">Livello:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="level"
-                      value="easy"
-                      class="option-input"
-                      [checked]="options().level === 'easy'"
-                      (change)="setLevel('easy')"
-                    />
-                    <span class="option-label">🟢 Facile (passo 1–2)</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="level"
-                      value="medium"
-                      class="option-input"
-                      [checked]="options().level === 'medium'"
-                      (change)="setLevel('medium')"
-                    />
-                    <span class="option-label">🟡 Medio (passo 2–10)</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="level"
-                      value="hard"
-                      class="option-input"
-                      [checked]="options().level === 'hard'"
-                      (change)="setLevel('hard')"
-                    />
-                    <span class="option-label">🔴 Difficile (passo 10–50)</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Numeri mancanti -->
-              <div class="space-y-2">
-                <span class="section-label">Numeri mancanti:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="numHoles"
-                      value="1"
-                      class="option-input"
-                      [checked]="options().numHoles === 1"
-                      (change)="setNumHoles(1)"
-                    />
-                    <span class="option-label">1 numero mancante</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="numHoles"
-                      value="2"
-                      class="option-input"
-                      [checked]="options().numHoles === 2"
-                      (change)="setNumHoles(2)"
-                    />
-                    <span class="option-label">2 numeri mancanti</span>
-                  </label>
-                </div>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="level"
+                    value="easy"
+                    class="option-input"
+                    [checked]="options().level === 'easy'"
+                    (change)="setLevel('easy')"
+                  />
+                  <span class="option-label">🟢 Facile (passo 1–2)</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="level"
+                    value="medium"
+                    class="option-input"
+                    [checked]="options().level === 'medium'"
+                    (change)="setLevel('medium')"
+                  />
+                  <span class="option-label">🟡 Medio (passo 2–10)</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="level"
+                    value="hard"
+                    class="option-input"
+                    [checked]="options().level === 'hard'"
+                    (change)="setLevel('hard')"
+                  />
+                  <span class="option-label">🔴 Difficile (passo 10–50)</span>
+                </label>
               </div>
             </div>
-          </aside>
+
+            <!-- Numeri mancanti -->
+            <div class="space-y-2">
+              <span class="section-label">Numeri mancanti:</span>
+              <div class="space-y-2">
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="numHoles"
+                    value="1"
+                    class="option-input"
+                    [checked]="options().numHoles === 1"
+                    (change)="setNumHoles(1)"
+                  />
+                  <span class="option-label">1 numero mancante</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="numHoles"
+                    value="2"
+                    class="option-input"
+                    [checked]="options().numHoles === 2"
+                    (change)="setNumHoles(2)"
+                  />
+                  <span class="option-label">2 numeri mancanti</span>
+                </label>
+              </div>
+            </div>
+          </app-sidebar-options>
 
           <!-- Area esercizio -->
           <main class="exercise-area">
@@ -278,52 +252,6 @@ const SEQUENCE_LENGTH = 5;
   `,
   styles: [
     `
-      .pseudo-input {
-        width: 100%;
-        padding: 1.25rem 1.5rem;
-        font-size: 2rem;
-        font-weight: 700;
-        text-align: center;
-        border: 3px solid var(--color-primary);
-        border-radius: 16px;
-        background: white;
-        color: var(--color-text-primary);
-        min-height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-      }
-
-      .pseudo-input.active {
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
-      }
-
-      .pseudo-input-text {
-        color: var(--color-text-primary);
-      }
-
-      .cursor-blink {
-        display: inline-block;
-        width: 3px;
-        height: 2rem;
-        background: var(--color-text-primary);
-        margin-left: 0.25rem;
-        animation: blink 1s infinite;
-      }
-
-      @keyframes blink {
-        0%,
-        49% {
-          opacity: 1;
-        }
-        50%,
-        100% {
-          opacity: 0;
-        }
-      }
-
       .sequence-container {
         display: flex;
         align-items: center;
@@ -506,10 +434,6 @@ export class SequencesComponent {
     this.attemptCount.set(0);
     this.showFeedback.set(false);
     this.feedbackType.set('retry');
-  }
-
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen.update((v) => !v);
   }
 
   setStepType(type: SequenceStepType): void {

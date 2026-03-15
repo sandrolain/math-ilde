@@ -7,6 +7,8 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { HeaderComponent } from '../../../components/header/header.component';
+import { SidebarOptionsComponent } from '../../../components/sidebar-options/sidebar-options.component';
+import { rnd, shuffle } from '../../../utils/math-utils';
 import { GameMemoryOptionsStorageService } from '../../../services/game-memory-options-storage.service';
 import type {
   MemoryOptions,
@@ -16,19 +18,6 @@ import type {
 } from '../../../types/exercise.types';
 
 // ---- Generazione coppie ----
-
-function rnd(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = rnd(0, i);
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 interface Pair {
   operation: string;
@@ -127,7 +116,7 @@ function medalForMoves(moves: number, totalPairs: number): { emoji: string; labe
 
 @Component({
   selector: 'app-game-memory',
-  imports: [HeaderComponent],
+  imports: [HeaderComponent, SidebarOptionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
@@ -137,92 +126,65 @@ function medalForMoves(moves: number, totalPairs: number): { emoji: string; labe
       <div class="container-main">
         <div class="layout-exercise">
           <!-- Sidebar opzioni -->
-          <aside class="sidebar">
-            <div class="lg:hidden flex justify-start mb-4">
-              <button
-                (click)="toggleMobileMenu()"
-                class="btn btn-primary"
-                [attr.aria-expanded]="mobileMenuOpen()"
-                aria-label="Apri opzioni"
-              >
-                {{ mobileMenuOpen() ? '✕ Chiudi' : '☰ Opzioni' }}
-              </button>
+          <app-sidebar-options>
+            <!-- Tipo operazione -->
+            <div class="space-y-2">
+              <span class="section-label">Operazione:</span>
+              <div class="space-y-2">
+                @for (op of opTypes; track op.value) {
+                  <label class="option-item">
+                    <input
+                      type="radio"
+                      name="opType"
+                      [value]="op.value"
+                      class="option-input"
+                      [checked]="options().operationType === op.value"
+                      (change)="setOpType(op.value)"
+                    />
+                    <span class="option-label">{{ op.label }}</span>
+                  </label>
+                }
+              </div>
             </div>
 
-            <div
-              class="fixed lg:relative inset-y-0 left-0 w-80 bg-white shadow-lg p-6 space-y-6 z-40 transition-transform duration-300 lg:translate-x-0 max-h-screen overflow-y-auto"
-              [class.translate-x-[-100%]]="!mobileMenuOpen()"
+            <!-- Dimensione griglia -->
+            <div class="space-y-2">
+              <span class="section-label">Difficoltà:</span>
+              <div class="space-y-2">
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="gridSize"
+                    value="4x3"
+                    class="option-input"
+                    [checked]="options().gridSize === '4x3'"
+                    (change)="setGridSize('4x3')"
+                  />
+                  <span class="option-label">⭐ Facile (4×3 — 6 coppie)</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="gridSize"
+                    value="4x4"
+                    class="option-input"
+                    [checked]="options().gridSize === '4x4'"
+                    (change)="setGridSize('4x4')"
+                  />
+                  <span class="option-label">⭐⭐ Difficile (4×4 — 8 coppie)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Pulsante nuova partita -->
+            <button
+              (click)="newGame()"
+              class="btn btn-primary w-full"
+              aria-label="Inizia una nuova partita"
             >
-              <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-(--color-text-primary)">Opzioni</h3>
-                <button
-                  (click)="toggleMobileMenu()"
-                  class="lg:hidden text-2xl text-(--color-text-primary)"
-                  aria-label="Chiudi opzioni"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <!-- Tipo operazione -->
-              <div class="space-y-2">
-                <span class="section-label">Operazione:</span>
-                <div class="space-y-2">
-                  @for (op of opTypes; track op.value) {
-                    <label class="option-item">
-                      <input
-                        type="radio"
-                        name="opType"
-                        [value]="op.value"
-                        class="option-input"
-                        [checked]="options().operationType === op.value"
-                        (change)="setOpType(op.value)"
-                      />
-                      <span class="option-label">{{ op.label }}</span>
-                    </label>
-                  }
-                </div>
-              </div>
-
-              <!-- Dimensione griglia -->
-              <div class="space-y-2">
-                <span class="section-label">Difficoltà:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="gridSize"
-                      value="4x3"
-                      class="option-input"
-                      [checked]="options().gridSize === '4x3'"
-                      (change)="setGridSize('4x3')"
-                    />
-                    <span class="option-label">⭐ Facile (4×3 — 6 coppie)</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="gridSize"
-                      value="4x4"
-                      class="option-input"
-                      [checked]="options().gridSize === '4x4'"
-                      (change)="setGridSize('4x4')"
-                    />
-                    <span class="option-label">⭐⭐ Difficile (4×4 — 8 coppie)</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Pulsante nuova partita -->
-              <button
-                (click)="newGame()"
-                class="btn btn-primary w-full"
-                aria-label="Inizia una nuova partita"
-              >
-                🔄 Nuova partita
-              </button>
-            </div>
-          </aside>
+              🔄 Nuova partita
+            </button>
+          </app-sidebar-options>
 
           <!-- Area gioco -->
           <main class="exercise-area">
@@ -570,7 +532,6 @@ export class GameMemoryComponent {
   flippedIndices = signal<number[]>([]);
   moves = signal<number>(0);
   isComplete = signal<boolean>(false);
-  mobileMenuOpen = signal<boolean>(false);
   isWrongPair = signal<boolean>(false);
   successMessage = signal<string>(SUCCESS_MESSAGES[0]);
 
@@ -645,10 +606,6 @@ export class GameMemoryComponent {
         }, 900);
       }
     }
-  }
-
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen.update((v) => !v);
   }
 
   setOpType(value: MemoryOperationType): void {

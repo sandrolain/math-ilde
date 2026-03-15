@@ -8,6 +8,8 @@ import {
 } from '@angular/core';
 import { HeaderComponent } from '../../components/header/header.component';
 import { FeedbackComponent } from '../../components/feedback/feedback.component';
+import { SidebarOptionsComponent } from '../../components/sidebar-options/sidebar-options.component';
+import { rnd, shuffle } from '../../utils/math-utils';
 import { FeedbackService } from '../../services/feedback.service';
 import { ComparisonOptionsStorageService } from '../../services/comparison-options-storage.service';
 import type {
@@ -21,19 +23,6 @@ import type {
 
 // Colori per le bolle di ordinamento
 const SORT_COLORS = ['#a8d8ea', '#ffb6c1', '#b4e7ce', '#f0e68c', '#c8b4e7'];
-
-function rnd(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = rnd(0, i);
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 function generateExercise(opts: ComparisonOptions): ComparisonExercise {
   if (opts.mode === 'symbol') {
@@ -63,7 +52,7 @@ function generateExercise(opts: ComparisonOptions): ComparisonExercise {
 
 @Component({
   selector: 'app-comparison',
-  imports: [HeaderComponent, FeedbackComponent],
+  imports: [HeaderComponent, FeedbackComponent, SidebarOptionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
@@ -73,119 +62,92 @@ function generateExercise(opts: ComparisonOptions): ComparisonExercise {
       <div class="container-main">
         <div class="layout-exercise">
           <!-- Sidebar opzioni -->
-          <aside class="sidebar">
-            <div class="lg:hidden flex justify-start mb-4">
-              <button
-                (click)="toggleMobileMenu()"
-                class="btn btn-primary"
-                [attr.aria-expanded]="mobileMenuOpen()"
-                aria-label="Apri opzioni"
-              >
-                {{ mobileMenuOpen() ? '✕ Chiudi' : '☰ Opzioni' }}
-              </button>
+          <app-sidebar-options [(open)]="mobileMenuOpen">
+            <!-- Modalità -->
+            <div class="space-y-2">
+              <span class="section-label">Modalità:</span>
+              <div class="space-y-2">
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="symbol"
+                    class="option-input"
+                    [checked]="options().mode === 'symbol'"
+                    (change)="setMode('symbol')"
+                  />
+                  <span class="option-label">⚖️ Inserisci il simbolo</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="sort"
+                    class="option-input"
+                    [checked]="options().mode === 'sort'"
+                    (change)="setMode('sort')"
+                  />
+                  <span class="option-label">🔢 Metti in ordine</span>
+                </label>
+              </div>
             </div>
 
-            <div
-              class="fixed lg:relative inset-y-0 left-0 w-80 bg-white shadow-lg p-6 space-y-6 z-40 transition-transform duration-300 lg:translate-x-0 max-h-screen overflow-y-auto"
-              [class.translate-x-[-100%]]="!mobileMenuOpen()"
-            >
-              <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-(--color-text-primary)">Opzioni</h3>
-                <button
-                  (click)="toggleMobileMenu()"
-                  class="lg:hidden text-2xl text-(--color-text-primary)"
-                  aria-label="Chiudi opzioni"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <!-- Modalità -->
+            <!-- Livello -->
+            <div class="space-y-2">
+              <span class="section-label">Numeri fino a:</span>
               <div class="space-y-2">
-                <span class="section-label">Modalità:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="symbol"
-                      class="option-input"
-                      [checked]="options().mode === 'symbol'"
-                      (change)="setMode('symbol')"
-                    />
-                    <span class="option-label">⚖️ Inserisci il simbolo</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="sort"
-                      class="option-input"
-                      [checked]="options().mode === 'sort'"
-                      (change)="setMode('sort')"
-                    />
-                    <span class="option-label">🔢 Metti in ordine</span>
-                  </label>
-                </div>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="level"
+                    value="10"
+                    class="option-input"
+                    [checked]="options().level === 10"
+                    (change)="setLevel(10)"
+                  />
+                  <span class="option-label">⭐ 10</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="level"
+                    value="100"
+                    class="option-input"
+                    [checked]="options().level === 100"
+                    (change)="setLevel(100)"
+                  />
+                  <span class="option-label">⭐⭐ 100</span>
+                </label>
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="level"
+                    value="1000"
+                    class="option-input"
+                    [checked]="options().level === 1000"
+                    (change)="setLevel(1000)"
+                  />
+                  <span class="option-label">⭐⭐⭐ 1000</span>
+                </label>
               </div>
-
-              <!-- Livello -->
-              <div class="space-y-2">
-                <span class="section-label">Numeri fino a:</span>
-                <div class="space-y-2">
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="level"
-                      value="10"
-                      class="option-input"
-                      [checked]="options().level === 10"
-                      (change)="setLevel(10)"
-                    />
-                    <span class="option-label">⭐ 10</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="level"
-                      value="100"
-                      class="option-input"
-                      [checked]="options().level === 100"
-                      (change)="setLevel(100)"
-                    />
-                    <span class="option-label">⭐⭐ 100</span>
-                  </label>
-                  <label class="option-item">
-                    <input
-                      type="radio"
-                      name="level"
-                      value="1000"
-                      class="option-input"
-                      [checked]="options().level === 1000"
-                      (change)="setLevel(1000)"
-                    />
-                    <span class="option-label">⭐⭐⭐ 1000</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Barre visive (solo modalità symbol) -->
-              @if (options().mode === 'symbol') {
-                <div class="space-y-2">
-                  <span class="section-label">Rappresentazione visiva:</span>
-                  <label class="option-item">
-                    <input
-                      type="checkbox"
-                      class="option-input"
-                      [checked]="options().showBars"
-                      (change)="toggleBars()"
-                    />
-                    <span class="option-label">📊 Mostra barre</span>
-                  </label>
-                </div>
-              }
             </div>
-          </aside>
+
+            <!-- Barre visive (solo modalità symbol) -->
+            @if (options().mode === 'symbol') {
+              <div class="space-y-2">
+                <span class="section-label">Rappresentazione visiva:</span>
+                <label class="option-item">
+                  <input
+                    type="checkbox"
+                    class="option-input"
+                    [checked]="options().showBars"
+                    (change)="toggleBars()"
+                  />
+                  <span class="option-label">📊 Mostra barre</span>
+                </label>
+              </div>
+            }
+          </app-sidebar-options>
 
           <!-- Area esercizio -->
           <main class="exercise-area">
@@ -674,10 +636,6 @@ export class ComparisonComponent {
     this.showFeedback.set(false);
     this.feedbackType.set('retry');
     this.resetSortItems();
-  }
-
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen.update((v) => !v);
   }
 
   setMode(mode: ComparisonMode): void {
