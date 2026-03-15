@@ -22,7 +22,44 @@ export type SectionType =
   | 'clock'
   | 'measurements'
   | 'comparison'
-  | 'geometry';
+  | 'geometry'
+  | 'game-memory';
+
+// --- Memory Matematico ---
+
+export type MemoryCardVariant = 'operation' | 'result';
+export type MemoryOperationType =
+  | 'addition'
+  | 'subtraction'
+  | 'multiplication'
+  | 'division'
+  | 'mixed';
+export type MemoryGridSize = '4x3' | '4x4';
+
+export interface MemoryOptions {
+  section: 'game-memory';
+  operationType: MemoryOperationType;
+  gridSize: MemoryGridSize;
+}
+
+export interface MemoryCard {
+  id: number;
+  pairId: number;
+  variant: MemoryCardVariant;
+  /** Testo mostrato sulla carta (es. "3 × 4" oppure "12") */
+  label: string;
+  isFlipped: boolean;
+  isMatched: boolean;
+}
+
+export interface MemoryGameState {
+  cards: MemoryCard[];
+  flippedIndices: number[];
+  matchedPairs: number;
+  totalPairs: number;
+  moves: number;
+  isComplete: boolean;
+}
 
 // --- Geometria di Base ---
 

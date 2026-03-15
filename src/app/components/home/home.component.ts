@@ -197,6 +197,29 @@ import { RouterLink } from '@angular/router';
             </p>
           </a>
         </div>
+
+        <!-- Sezione Giochi -->
+        <h2
+          class="text-2xl font-bold text-center mt-12 mb-6 text-[var(--color-text-primary)] animate-[fadeIn_3.3s_ease-out]"
+        >
+          🎮 Giochi
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Memory Matematico -->
+          <a
+            routerLink="/giochi/memory"
+            class="card card-interactive card-section animate-[fadeIn_3.5s_ease-out]"
+            aria-label="Vai al gioco Memory Matematico"
+          >
+            <div class="text-6xl text-center mb-4">🃏</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Memory
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Abbina operazioni e risultati
+            </p>
+          </a>
+        </div>
       </div>
     </div>
   `,
