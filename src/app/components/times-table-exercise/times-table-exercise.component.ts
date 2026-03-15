@@ -1,11 +1,9 @@
-import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Component, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import type { TimesTableRow } from '../../types/exercise.types';
 
 @Component({
   selector: 'app-times-table-exercise',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DragDropModule],
   template: `
     <div class="exercise-grid" aria-label="Esercizio tabelline">
       <!-- Colonna sinistra: operazioni fisse -->
@@ -20,38 +18,35 @@ import type { TimesTableRow } from '../../types/exercise.types';
         }
       </div>
 
-      <!-- Colonna destra: risultati drag-and-drop -->
+      <!-- Colonna destra: risultati tap-to-swap -->
       <div
         class="results-col"
-        cdkDropList
-        cdkDropListOrientation="vertical"
-        [cdkDropListData]="currentOrderMutable"
-        (cdkDropListDropped)="onDrop($event)"
-        aria-label="Risultati da riordinare"
-        aria-describedby="drag-instructions"
+        role="group"
+        aria-label="Risultati da riordinare. Tocca due numeri per scambiarli di posto."
       >
-        <p id="drag-instructions" class="sr-only">
-          Premi Spazio per iniziare a spostare un risultato. Usa i tasti freccia su e giù per
-          spostarti nella lista. Premi di nuovo Spazio per rilasciare.
+        <p class="sr-only">
+          Tocca un numero per selezionarlo, poi tocca un altro numero per scambiarli di posto.
         </p>
-        @for (result of currentOrderMutable; track result; let i = $index) {
-          <div
-            cdkDrag
+        @for (result of currentOrder(); track $index; let i = $index) {
+          <button
             class="row-item result-item"
+            [class.result-selected]="selectedIndex() === i"
             [class.result-correct]="positionCorrect()[i] === true"
             [class.result-wrong]="
               positionCorrect()[i] === false && positionCorrect()[i] !== undefined
             "
-            [cdkDragDisabled]="isCompleted()"
+            [disabled]="isCompleted()"
+            (click)="toggleSelect(i)"
             [attr.aria-label]="
-              'Risultato ' + result + (positionCorrect()[i] ? ', posizione corretta' : '')
+              'Risultato ' +
+              result +
+              (positionCorrect()[i] === true ? ', posizione corretta' : '') +
+              (selectedIndex() === i ? ', selezionato' : '')
             "
+            [attr.aria-pressed]="selectedIndex() === i"
           >
             <span class="result-text">{{ result }}</span>
-            <div class="drag-handle" cdkDragHandle aria-hidden="true">⠿</div>
-            <!-- Preview durante il drag -->
-            <div *cdkDragPlaceholder class="drag-placeholder"></div>
-          </div>
+          </button>
         }
       </div>
     </div>
@@ -114,19 +109,41 @@ import type { TimesTableRow } from '../../types/exercise.types';
       }
 
       .result-item {
+        width: 100%;
         padding: 0.5rem 0.75rem;
         background: white;
         border: 2px solid var(--color-primary, #a8d8ea);
-        cursor: grab;
-        justify-content: space-between;
-        user-select: none;
+        cursor: pointer;
+        justify-content: center;
         transition:
-          background 0.2s,
-          border-color 0.2s;
+          background 0.15s,
+          border-color 0.15s,
+          transform 0.1s,
+          box-shadow 0.15s;
+        touch-action: manipulation;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
       }
 
-      .result-item:active {
-        cursor: grabbing;
+      @media (hover: hover) {
+        .result-item:hover:not(:disabled) {
+          border-color: #667eea;
+          transform: scale(1.03);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+      }
+
+      .result-item:disabled {
+        cursor: default;
+        opacity: 0.8;
+      }
+
+      .result-item.result-selected {
+        border-color: #667eea;
+        background: #eef2ff;
+        box-shadow:
+          0 0 0 4px rgba(102, 126, 234, 0.25),
+          0 2px 6px rgba(0, 0, 0, 0.07);
+        transform: scale(1.05);
       }
 
       .result-item.result-correct {
@@ -142,44 +159,6 @@ import type { TimesTableRow } from '../../types/exercise.types';
       .result-text {
         font-size: clamp(1.2rem, 3vw, 1.6rem);
       }
-
-      .drag-handle {
-        font-size: 1.2rem;
-        color: #9ca3af;
-        cursor: grab;
-        padding-left: 0.5rem;
-        flex-shrink: 0;
-      }
-
-      .drag-placeholder {
-        height: 56px;
-        border-radius: 0.75rem;
-        background: #e0f2fe;
-        border: 2px dashed var(--color-primary, #a8d8ea);
-        box-sizing: border-box;
-        flex-shrink: 0;
-      }
-
-      .cdk-drag-preview {
-        border-radius: 0.75rem;
-        background: white;
-        border: 2px solid var(--color-primary, #a8d8ea);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-        display: flex;
-        align-items: center;
-        padding: 0.5rem 0.75rem;
-        font-size: clamp(1.2rem, 3vw, 1.6rem);
-        font-weight: 600;
-        color: var(--color-text-primary, #4a5568);
-      }
-
-      .cdk-drag-animating {
-        transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
-      }
-
-      .results-col.cdk-drop-list-dragging .result-item:not(.cdk-drag-placeholder) {
-        transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
-      }
     `,
   ],
 })
@@ -190,14 +169,20 @@ export class TimesTableExerciseComponent {
   isCompleted = input.required<boolean>();
   orderChange = output<number[]>();
 
-  // Copia mutabile dell'array per il CDK drag-drop (che richiede mutabilità)
-  get currentOrderMutable(): number[] {
-    return [...this.currentOrder()];
-  }
+  selectedIndex = signal<number | null>(null);
 
-  onDrop(event: CdkDragDrop<number[]>): void {
-    const newOrder = [...this.currentOrder()];
-    moveItemInArray(newOrder, event.previousIndex, event.currentIndex);
-    this.orderChange.emit(newOrder);
+  toggleSelect(index: number): void {
+    if (this.isCompleted()) return;
+    const prev = this.selectedIndex();
+    if (prev === null) {
+      this.selectedIndex.set(index);
+    } else if (prev === index) {
+      this.selectedIndex.set(null);
+    } else {
+      const newOrder = [...this.currentOrder()];
+      [newOrder[prev], newOrder[index]] = [newOrder[index], newOrder[prev]];
+      this.selectedIndex.set(null);
+      this.orderChange.emit(newOrder);
+    }
   }
 }

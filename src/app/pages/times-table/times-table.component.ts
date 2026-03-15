@@ -63,6 +63,9 @@ function randomMessage(messages: string[]): string {
           <h2 class="text-2xl font-bold text-(--color-text-primary)">
             Tabellina del {{ options().selectedMultiplier }}
           </h2>
+          <p class="text-sm text-(--color-text-secondary)">
+            Tocca due numeri per scambiarli di posto
+          </p>
 
           <app-times-table-exercise
             [rows]="tableRows()"
