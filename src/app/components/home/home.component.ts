@@ -195,6 +195,51 @@ import { RouterLink } from '@angular/router';
               Scopri le figure geometriche
             </p>
           </a>
+
+          <!-- Moltiplicazioni a Griglia -->
+          <a
+            routerLink="/moltiplicazioni-griglia"
+            class="card card-interactive card-section animate-[fadeIn_3.2s_ease-out]"
+            aria-label="Vai alla sezione Moltiplicazioni a Griglia"
+          >
+            <div class="text-6xl text-center mb-4">🟩</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Griglia ×
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Colora l&#39;area della moltiplicazione
+            </p>
+          </a>
+
+          <!-- Tabelline Quiz -->
+          <a
+            routerLink="/tabelline-quiz"
+            class="card card-interactive card-section animate-[fadeIn_3.3s_ease-out]"
+            aria-label="Vai alla sezione Quiz Tabelline"
+          >
+            <div class="text-6xl text-center mb-4">✏️</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Quiz Tabelline
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Scrivi i risultati della tabellina
+            </p>
+          </a>
+
+          <!-- Tabelline a Blocchi -->
+          <a
+            routerLink="/tabelline-griglia"
+            class="card card-interactive card-section animate-[fadeIn_3.4s_ease-out]"
+            aria-label="Vai alla sezione Tabelline a Blocchi"
+          >
+            <div class="text-6xl text-center mb-4">🧱</div>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
+              Tabelline a Blocchi
+            </h2>
+            <p class="text-center text-[var(--color-text-secondary)]">
+              Visualizza le tabelline come blocchi colorati
+            </p>
+          </a>
         </div>
 
         <!-- Sezione Giochi -->

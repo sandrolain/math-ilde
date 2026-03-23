@@ -40,6 +40,27 @@ export const routes: Routes = [
       import('./pages/times-table/times-table.component').then((m) => m.TimesTableComponent),
   },
   {
+    path: 'moltiplicazioni-griglia',
+    loadComponent: () =>
+      import('./pages/multiplication-grid/multiplication-grid.component').then(
+        (m) => m.MultiplicationGridComponent,
+      ),
+  },
+  {
+    path: 'tabelline-quiz',
+    loadComponent: () =>
+      import('./pages/times-table-quiz/times-table-quiz.component').then(
+        (m) => m.TimesTableQuizComponent,
+      ),
+  },
+  {
+    path: 'tabelline-griglia',
+    loadComponent: () =>
+      import('./pages/times-table-grid/times-table-grid.component').then(
+        (m) => m.TimesTableGridComponent,
+      ),
+  },
+  {
     path: 'sequenze',
     loadComponent: () =>
       import('./pages/sequences/sequences.component').then((m) => m.SequencesComponent),
