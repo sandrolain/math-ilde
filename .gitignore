@@ -38,6 +38,9 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+/.agents
+/.impeccable
+skills-lock.json
 
 # System files
 .DS_Store

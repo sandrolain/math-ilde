@@ -19,6 +19,7 @@ import type {
         (click)="toggleMobileMenu()"
         class="btn btn-primary"
         [attr.aria-expanded]="mobileMenuOpen()"
+        aria-controls="options-panel"
       >
         {{ mobileMenuOpen() ? '✕ Chiudi' : '☰ Opzioni' }}
       </button>
@@ -26,17 +27,19 @@ import type {
 
     <!-- Sidebar menu - slide out on mobile -->
     <div
+      id="options-panel"
       class="fixed lg:relative inset-y-0 left-0 w-80 bg-white shadow-lg p-6 space-y-6 z-40 transition-transform duration-300 lg:translate-x-0 max-h-screen overflow-y-auto"
       [class.translate-x-[-100%]]="!mobileMenuOpen()"
     >
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold text-[var(--color-text-primary)]">Opzioni</h3>
-        <button
-          (click)="toggleMobileMenu()"
-          class="lg:hidden text-2xl text-[var(--color-text-primary)]"
-        >
-          ✕
-        </button>
+      <h2 class="text-xl font-bold text-[var(--color-text-primary)]">Opzioni</h2>
+      <button
+        (click)="toggleMobileMenu()"
+        class="lg:hidden min-w-11 min-h-11 inline-flex items-center justify-center text-2xl text-[var(--color-text-primary)] rounded-xl"
+        aria-label="Chiudi opzioni"
+      >
+        ✕
+      </button>
       </div>
 
       <!-- Tipo di operazione (solo per addizioni-sottrazioni) -->

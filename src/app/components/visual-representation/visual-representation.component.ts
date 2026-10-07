@@ -35,7 +35,6 @@ interface RowOfElements {
                 @for (element of row.elements; track element.index) {
                   <div
                     [class]="getElementClasses(element)"
-                    [attr.aria-label]="getElementAriaLabel(element)"
                   >
                     <img
                       [ngSrc]="'/icons/fruits/' + element.fruit + '.png'"

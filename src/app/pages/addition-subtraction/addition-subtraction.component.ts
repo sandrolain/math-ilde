@@ -81,36 +81,36 @@ import type {
                 </div>
               }
 
-              <!-- Pseudo-input e verifica -->
+              <!-- Risposta e verifica -->
 
               <div class="max-w-md mx-auto space-y-6">
                 <div>
-                  <label for="answer-display" class="field-label"> Qual è il risultato? </label>
-                  <div
-                    id="answer-display"
-                    class="pseudo-input"
+                  <label for="answer-input" class="field-label">Qual è il risultato?</label>
+                  <input
+                    #answerInput
+                    id="answer-input"
+                    type="number"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    class="field"
                     [class.active]="inputFocused()"
                     [class.error]="showFeedback() && !isCorrect() && attemptCount() > 0"
-                    (click)="focusInput()"
-                    role="textbox"
-                    [attr.aria-label]="'Risultato inserito: ' + (userAnswerStr() || 'vuoto')"
-                    tabindex="0"
-                  >
-                    <span class="pseudo-input-text">{{ userAnswerStr() || '?' }}</span>
-                    @if (inputFocused()) {
-                      <span class="cursor-blink"></span>
-                    }
-                  </div>
+                    [value]="userAnswerStr()"
+                    (input)="onAnswerInput($event)"
+                    aria-describedby="answer-help"
+                    aria-label="Risultato dell'operazione"
+                  />
+                  <span id="answer-help" class="sr-only">
+                    Inserisci il risultato usando la tastiera numerica o i tasti del dispositivo.
+                  </span>
                 </div>
 
                 <!-- Tastiera numerica -->
-                @if (inputFocused()) {
-                  <app-numeric-keyboard
-                    (numberPressed)="onNumberPressed($event)"
-                    (backspacePressed)="onBackspacePressed()"
-                    (clearPressed)="onClearPressed()"
-                  />
-                }
+                <app-numeric-keyboard
+                  (numberPressed)="onNumberPressed($event)"
+                  (backspacePressed)="onBackspacePressed()"
+                  (clearPressed)="onClearPressed()"
+                />
 
                 <button
                   (click)="verifyAnswer()"
@@ -198,6 +198,14 @@ export class AdditionSubtractionComponent {
 
   focusInput(): void {
     this.inputFocused.set(true);
+    this.answerInput()?.nativeElement.focus();
+  }
+
+  onAnswerInput(event: Event): void {
+    const input = event.target;
+    if (input instanceof HTMLInputElement) {
+      this.userAnswerStr.set(input.value);
+    }
   }
 
   onNumberPressed(num: number): void {
