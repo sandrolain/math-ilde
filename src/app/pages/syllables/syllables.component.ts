@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { SyllabificationService } from '../../services/syllabification.service';
 import { SyllableOptionsStorageService } from '../../services/syllable-options-storage.service';
+import { SpeechService } from '../../services/speech.service';
 import { SyllableDisplayComponent } from '../../components/syllable-display/syllable-display.component';
 import { SyllableOptionsControlComponent } from '../../components/syllable-options-control/syllable-options-control.component';
 import { HeaderComponent } from '../../components/header/header.component';
@@ -90,6 +91,46 @@ function generateSyllable(opts: SyllableOptions): string {
           }
         </div>
 
+        @if (speechService.isSupported) {
+          <div class="flex flex-wrap justify-center gap-3" aria-label="Comandi vocali">
+            <button
+              class="btn btn-secondary min-h-12 min-w-40 text-lg"
+              type="button"
+              (click)="speakContent()"
+              [attr.aria-label]="speechService.isSpeaking() ? 'Lettura in corso' : 'Ascolta parola o frase'"
+            >
+              <span aria-hidden="true">🔊</span>
+              {{ speechService.isSpeaking() ? 'In ascolto...' : 'Ascolta' }}
+            </button>
+
+            <button
+              class="btn btn-secondary min-h-12 min-w-40 text-lg"
+              type="button"
+              (click)="speakSyllables()"
+              aria-label="Ascolta sillaba per sillaba"
+            >
+              <span aria-hidden="true">🗣️</span>
+              Ascolta sillabe
+            </button>
+
+            @if (speechService.isSpeaking()) {
+              <button
+                class="btn btn-outline min-h-12 min-w-32 text-lg"
+                type="button"
+                (click)="stopSpeaking()"
+                aria-label="Ferma la lettura"
+              >
+                <span aria-hidden="true">⏹️</span>
+                Ferma
+              </button>
+            }
+          </div>
+        } @else {
+          <p class="text-center text-sm text-slate-600" role="status">
+            La lettura vocale non è disponibile su questo dispositivo.
+          </p>
+        }
+
         <button
           class="btn btn-primary btn-large mt-4 min-w-45 min-h-14 text-xl"
           (click)="generateNext()"
@@ -105,6 +146,7 @@ function generateSyllable(opts: SyllableOptions): string {
 export class SyllablesComponent implements OnInit {
   private readonly syllabificationService = inject(SyllabificationService);
   private readonly storageService = inject(SyllableOptionsStorageService);
+  readonly speechService = inject(SpeechService);
 
   options = signal<SyllableOptions>(this.storageService.loadOptions());
   currentRawContent = signal<string | string[]>('ba');
@@ -134,6 +176,20 @@ export class SyllablesComponent implements OnInit {
     this.generateNext();
   }
 
+  speakContent(): void {
+    const raw = this.currentRawContent();
+    const text = Array.isArray(raw) ? raw.join(' ') : raw;
+    this.speechService.speak(text);
+  }
+
+  speakSyllables(): void {
+    this.speechService.speakSyllables(this.syllabifiedContent());
+  }
+
+  stopSpeaking(): void {
+    this.speechService.stop();
+  }
+
   onSpaceKey(event: Event): void {
     const target = (event as KeyboardEvent).target as HTMLElement;
     if (target.tagName !== 'BUTTON' && target.tagName !== 'INPUT') {
@@ -143,6 +199,7 @@ export class SyllablesComponent implements OnInit {
   }
 
   generateNext(): void {
+    this.speechService.stop();
     const opts = this.options();
     switch (opts.activeMode) {
       case 'syllable':
