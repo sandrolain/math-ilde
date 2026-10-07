@@ -150,6 +150,8 @@ import type {
                 [show]="showFeedback()"
                 [type]="feedbackType()"
                 [message]="feedbackMessage()"
+                [hint]="feedbackType() !== 'success' ? learningHint() : ''"
+                [achievement]="feedbackType() === 'success' ? achievementMessage() : ''"
                 (close)="closeFeedback()"
                 (next)="nextExercise()"
               />
@@ -189,6 +191,7 @@ export class AdditionSubtractionComponent {
   userAnswerStr = signal<string>('');
   attemptCount = signal<number>(0);
   exerciseNumber = signal(1);
+  correctAnswers = signal(0);
   readonly totalExercises = 10;
   showFeedback = signal<boolean>(false);
   feedbackType = signal<FeedbackType>('retry');
@@ -218,6 +221,26 @@ export class AdditionSubtractionComponent {
       return this.feedbackService.getMessage('retry');
     }
   });
+
+  learningHint = computed(() => {
+    const operation = this.currentOperation();
+
+    if (operation.operator === '+') {
+      return operation.operand3 === undefined
+        ? 'Conta il primo gruppo, poi aggiungi il secondo.'
+        : 'Somma un gruppo alla volta: prima i primi due, poi il terzo.';
+    }
+
+    if (operation.operator === '-') {
+      return 'Conta tutti gli elementi, togli quelli barrati e guarda quanti ne restano.';
+    }
+
+    return 'Osserva i gruppi colorati e prova a contarli con calma.';
+  });
+
+  achievementMessage = computed(() =>
+    this.correctAnswers() > 0 ? `Risposte corrette: ${this.correctAnswers()}` : '',
+  );
 
   constructor() {
     // Effetto per salvare le opzioni quando cambiano
@@ -265,6 +288,7 @@ export class AdditionSubtractionComponent {
 
     // Genera nuova operazione con le nuove opzioni
     this.exerciseNumber.set(1);
+    this.correctAnswers.set(0);
     this.resetExercise();
   }
 
@@ -291,6 +315,7 @@ export class AdditionSubtractionComponent {
     this.attemptCount.update((count) => count + 1);
 
     if (this.isCorrect()) {
+      this.correctAnswers.update((count) => count + 1);
       this.feedbackType.set('success');
       this.showFeedback.set(true);
     } else if (this.shouldShowAnswer()) {

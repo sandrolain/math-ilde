@@ -22,6 +22,14 @@ import type { FeedbackType } from '../../types/exercise.types';
             {{ message() }}
           </div>
 
+          @if (hint()) {
+            <p class="feedback-hint">{{ hint() }}</p>
+          }
+
+          @if (achievement()) {
+            <p class="feedback-achievement">{{ achievement() }}</p>
+          }
+
           <div class="text-center mt-6">
             <button
               #continueBtn
@@ -43,6 +51,25 @@ import type { FeedbackType } from '../../types/exercise.types';
       :host {
         display: block;
       }
+
+      .feedback-hint,
+      .feedback-achievement {
+        margin: 0 auto;
+        max-width: 28rem;
+        text-align: center;
+        line-height: 1.5;
+      }
+
+      .feedback-hint {
+        color: var(--color-text-primary);
+        font-size: 1.15rem;
+      }
+
+      .feedback-achievement {
+        margin-top: 0.75rem;
+        color: var(--color-primary-strong);
+        font-weight: 800;
+      }
     `,
   ],
 })
@@ -50,6 +77,8 @@ export class FeedbackComponent {
   show = input.required<boolean>();
   type = input.required<FeedbackType>();
   message = input.required<string>();
+  hint = input('');
+  achievement = input('');
   close = output<void>();
   next = output<void>();
 

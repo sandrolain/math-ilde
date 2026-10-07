@@ -73,18 +73,18 @@ import { Component, output } from '@angular/core';
       }
 
       .key-number {
-        background: linear-gradient(135deg, #a8d8ea 0%, #8ec5d6 100%);
+        background: #347d94;
         color: white;
       }
 
       .key-backspace {
-        background: linear-gradient(135deg, #ffb6c1 0%, #ff9fb0 100%);
+        background: #a94f63;
         color: white;
       }
 
       .key-clear {
-        background: linear-gradient(135deg, #f0e68c 0%, #e6d875 100%);
-        color: #4a5568;
+        background: var(--color-encourage-strong);
+        color: white;
       }
 
       /* Effetto hover solo su dispositivi non touch */

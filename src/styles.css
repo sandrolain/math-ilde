@@ -10,10 +10,18 @@
   --color-primary-strong: #24566a;
   --color-secondary: #ffb6c1; /* rosa pastello */
   --color-tertiary: #b4e7ce; /* verde menta pastello */
+  --color-action: #24566a;
+  --color-action-hover: #1b4353;
+  --color-border: #c4dce5;
 
   /* Feedback */
   --color-success: #90ee90; /* verde chiaro */
+  --color-success-strong: #216b43;
+  --color-success-surface: #effaf3;
   --color-encourage: #ffd700; /* giallo dorato soft */
+  --color-encourage-strong: #8a5b08;
+  --color-encourage-surface: #fff8e6;
+  --color-info-surface: #edf7fb;
 
   /* Backgrounds */
   --color-bg-primary: #fff9f0; /* crema */
@@ -109,7 +117,11 @@ body {
 
   .btn-primary {
     @apply text-white text-2xl;
-    background: var(--color-primary-strong);
+    background: var(--color-action);
+  }
+
+  .btn-primary:hover {
+    background: var(--color-action-hover);
   }
 
   .btn-secondary {
@@ -127,7 +139,7 @@ body {
 
   .btn-success {
     @apply text-white text-xl;
-    background: linear-gradient(to right, #4ade80, #22c55e);
+    background: var(--color-success-strong);
   }
 
   .btn-lg {
@@ -202,7 +214,7 @@ body {
   /* Headers */
   .header {
     @apply shadow-md text-shadow-md;
-    background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+    background: var(--color-action);
   }
 
   .section-title {
@@ -241,18 +253,21 @@ body {
   }
 
   .modal-success {
-    @apply border-4 border-green-300;
-    background: linear-gradient(to bottom right, #dcfce7, #f0fdf4);
+    @apply border-4;
+    border-color: var(--color-success-strong);
+    background: var(--color-success-surface);
   }
 
   .modal-retry {
-    @apply border-4 border-red-300;
-    background: linear-gradient(to bottom right, #fee2e2, #fef2f2);
+    @apply border-4;
+    border-color: var(--color-encourage-strong);
+    background: var(--color-encourage-surface);
   }
 
   .modal-info {
-    @apply border-4 border-blue-300;
-    background: linear-gradient(to bottom right, #dbeafe, #eff6ff);
+    @apply border-4;
+    border-color: var(--color-primary-strong);
+    background: var(--color-info-surface);
   }
 
   .feedback-message {
