@@ -11,6 +11,7 @@ const SYLLABLE_PAUSE_MS = 750;
 @Injectable({ providedIn: 'root' })
 export class SpeechService {
   readonly isSpeaking = signal(false);
+  readonly activeSyllableIndex = signal<number | null>(null);
   readonly isSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
   private readonly synthesis =
@@ -29,15 +30,30 @@ export class SpeechService {
     }
 
     this.stop();
+    const run = this.speechRun;
 
     const utterance = new SpeechSynthesisUtterance(normalizedText);
     utterance.lang = 'it-IT';
     utterance.rate = options.rate ?? 0.85;
     utterance.pitch = options.pitch ?? 1;
     utterance.volume = options.volume ?? 1;
-    utterance.onstart = () => this.isSpeaking.set(true);
-    utterance.onend = () => this.isSpeaking.set(false);
-    utterance.onerror = () => this.isSpeaking.set(false);
+    utterance.onstart = () => {
+      if (run === this.speechRun) {
+        this.isSpeaking.set(true);
+      }
+    };
+    utterance.onend = () => {
+      if (run === this.speechRun) {
+        this.isSpeaking.set(false);
+        this.activeSyllableIndex.set(null);
+      }
+    };
+    utterance.onerror = () => {
+      if (run === this.speechRun) {
+        this.isSpeaking.set(false);
+        this.activeSyllableIndex.set(null);
+      }
+    };
 
     this.synthesis.speak(utterance);
   }
@@ -66,6 +82,7 @@ export class SpeechService {
     }
     this.syllableQueue = [];
     this.syllableIndex = 0;
+    this.activeSyllableIndex.set(null);
     this.isSpeaking.set(false);
   }
 
@@ -77,9 +94,11 @@ export class SpeechService {
     const syllable = this.syllableQueue[this.syllableIndex];
     if (!syllable) {
       this.isSpeaking.set(false);
+      this.activeSyllableIndex.set(null);
       return;
     }
 
+    this.activeSyllableIndex.set(this.syllableIndex);
     const utterance = new SpeechSynthesisUtterance(syllable);
     utterance.lang = 'it-IT';
     utterance.rate = 0.65;
@@ -91,6 +110,7 @@ export class SpeechService {
       this.syllableIndex++;
       if (this.syllableIndex >= this.syllableQueue.length) {
         this.isSpeaking.set(false);
+        this.activeSyllableIndex.set(null);
         return;
       }
 
@@ -102,6 +122,7 @@ export class SpeechService {
     utterance.onerror = () => {
       if (run === this.speechRun) {
         this.isSpeaking.set(false);
+        this.activeSyllableIndex.set(null);
       }
     };
 

@@ -75,6 +75,8 @@ function generateSyllable(opts: SyllableOptions): string {
                 displayCase="upper"
                 [cursive]="options().showCursive"
                 [isSentence]="options().activeMode === 'sentence'"
+                [speechActive]="speechService.isSpeaking()"
+                [activeSyllableIndex]="speechService.activeSyllableIndex()"
               />
             </section>
           }
@@ -86,6 +88,8 @@ function generateSyllable(opts: SyllableOptions): string {
                 displayCase="lower"
                 [cursive]="options().showCursive"
                 [isSentence]="options().activeMode === 'sentence'"
+                [speechActive]="speechService.isSpeaking()"
+                [activeSyllableIndex]="speechService.activeSyllableIndex()"
               />
             </section>
           }

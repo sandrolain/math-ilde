@@ -13,12 +13,13 @@ import { ChangeDetectionStrategy } from '@angular/core';
     >
       @if (isSentence()) {
         <div class="sentence-wrapper">
-          @for (word of content(); track $index) {
+          @for (word of content(); track $index; let wordIndex = $index) {
             <span class="word-group">
-              @for (syllable of word; track $index) {
+              @for (syllable of word; track $index; let syllableIndex = $index) {
                 <span
                   class="syllable-box"
                   [class.syllable-box--upper]="displayCase() === 'upper'"
+                  [class.syllable-box--active]="isSyllableActive(wordIndex, syllableIndex)"
                 >{{ displayCase() === 'upper' ? syllable.toUpperCase() : syllable.toLowerCase() }}</span>
               }
             </span>
@@ -26,11 +27,12 @@ import { ChangeDetectionStrategy } from '@angular/core';
         </div>
       } @else {
         <div class="word-wrapper">
-          @for (word of content(); track $index) {
-            @for (syllable of word; track $index) {
+          @for (word of content(); track $index; let wordIndex = $index) {
+            @for (syllable of word; track $index; let syllableIndex = $index) {
               <span
                 class="syllable-box"
                 [class.syllable-box--upper]="displayCase() === 'upper'"
+                [class.syllable-box--active]="isSyllableActive(wordIndex, syllableIndex)"
               >{{ displayCase() === 'upper' ? syllable.toUpperCase() : syllable.toLowerCase() }}</span>
             }
           }
@@ -111,6 +113,15 @@ import { ChangeDetectionStrategy } from '@angular/core';
       font-size: clamp(2.5rem, 8vw, 5rem);
     }
 
+    .syllable-box--active {
+      background: var(--color-success, #d9f99d);
+      border-color: var(--color-success-dark, #65a30d);
+      box-shadow: 0 0 0 0.35rem rgb(132 204 22 / 25%), 0 0.35rem 0.75rem rgb(101 163 13 / 25%);
+      transform: translateY(-0.2rem) scale(1.04);
+      z-index: 1;
+      transition: background 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+    }
+
     .font-cursive .syllable-box {
       font-family: 'Playwrite IT Trad', cursive;
       font-weight: 400;
@@ -122,4 +133,24 @@ export class SyllableDisplayComponent {
   displayCase = input<'upper' | 'lower'>('lower');
   cursive = input<boolean>(false);
   isSentence = input<boolean>(false);
+  speechActive = input<boolean>(false);
+  activeSyllableIndex = input<number | null>(null);
+
+  isSyllableActive(wordIndex: number, syllableIndex: number): boolean {
+    if (!this.speechActive()) {
+      return false;
+    }
+
+    const activeIndex = this.activeSyllableIndex();
+    if (activeIndex === null) {
+      return true;
+    }
+
+    let flatIndex = syllableIndex;
+    for (let index = 0; index < wordIndex; index++) {
+      flatIndex += this.content()[index].length;
+    }
+
+    return flatIndex === activeIndex;
+  }
 }
