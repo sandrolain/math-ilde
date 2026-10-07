@@ -39,8 +39,8 @@ interface RowOfElements {
                     <img
                       [ngSrc]="'/icons/fruits/' + element.fruit + '.png'"
                       [alt]="getElementAriaLabel(element)"
-                      width="100"
-                      height="100"
+                      fill
+                      sizes="(min-width: 768px) 64px, 32px"
                       class="w-full h-full object-contain"
                     />
                   </div>
@@ -337,7 +337,7 @@ export class VisualRepresentationComponent {
   }
 
   getElementClasses(element: VisualElement): string {
-    const baseClasses = 'shape-element transition-all duration-300';
+    const baseClasses = 'shape-element relative transition-all duration-300';
     const sizeClass = this.getElementSize();
 
     // Per sottrazione, barra gli elementi che devono essere sottratti
