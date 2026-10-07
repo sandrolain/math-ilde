@@ -20,7 +20,7 @@ import { ChangeDetectionStrategy } from '@angular/core';
                   class="syllable-box"
                   [class.syllable-box--upper]="displayCase() === 'upper'"
                   [class.syllable-box--active]="isSyllableActive(wordIndex, syllableIndex)"
-                >{{ displayCase() === 'upper' ? syllable.toUpperCase() : syllable.toLowerCase() }}</span>
+                >{{ formatSyllable(syllable, wordIndex, syllableIndex) }}</span>
               }
             </span>
           }
@@ -33,7 +33,7 @@ import { ChangeDetectionStrategy } from '@angular/core';
                 class="syllable-box"
                 [class.syllable-box--upper]="displayCase() === 'upper'"
                 [class.syllable-box--active]="isSyllableActive(wordIndex, syllableIndex)"
-              >{{ displayCase() === 'upper' ? syllable.toUpperCase() : syllable.toLowerCase() }}</span>
+              >{{ formatSyllable(syllable, wordIndex, syllableIndex) }}</span>
             }
           }
         </div>
@@ -130,11 +130,24 @@ import { ChangeDetectionStrategy } from '@angular/core';
 })
 export class SyllableDisplayComponent {
   content = input.required<string[][]>();
-  displayCase = input<'upper' | 'lower'>('lower');
+  displayCase = input<'upper' | 'lower' | 'sentence'>('lower');
   cursive = input<boolean>(false);
   isSentence = input<boolean>(false);
   speechActive = input<boolean>(false);
   activeSyllableIndex = input<number | null>(null);
+
+  formatSyllable(syllable: string, wordIndex: number, syllableIndex: number): string {
+    if (this.displayCase() === 'upper') {
+      return syllable.toUpperCase();
+    }
+
+    const lowercaseSyllable = syllable.toLowerCase();
+    if (this.displayCase() === 'sentence' && wordIndex === 0 && syllableIndex === 0) {
+      return lowercaseSyllable.charAt(0).toUpperCase() + lowercaseSyllable.slice(1);
+    }
+
+    return lowercaseSyllable;
+  }
 
   isSyllableActive(wordIndex: number, syllableIndex: number): boolean {
     if (!this.speechActive()) {

@@ -73,7 +73,6 @@ function generateSyllable(opts: SyllableOptions): string {
               <app-syllable-display
                 [content]="syllabifiedContent()"
                 displayCase="upper"
-                [cursive]="options().showCursive"
                 [isSentence]="options().activeMode === 'sentence'"
                 [speechActive]="speechService.isSpeaking()"
                 [activeSyllableIndex]="speechService.activeSyllableIndex()"
@@ -86,7 +85,19 @@ function generateSyllable(opts: SyllableOptions): string {
               <app-syllable-display
                 [content]="syllabifiedContent()"
                 displayCase="lower"
-                [cursive]="options().showCursive"
+                [isSentence]="options().activeMode === 'sentence'"
+                [speechActive]="speechService.isSpeaking()"
+                [activeSyllableIndex]="speechService.activeSyllableIndex()"
+              />
+            </section>
+          }
+
+          @if (options().showCursive) {
+            <section aria-label="Testo in corsivo">
+              <app-syllable-display
+                [content]="syllabifiedContent()"
+                displayCase="sentence"
+                [cursive]="true"
                 [isSentence]="options().activeMode === 'sentence'"
                 [speechActive]="speechService.isSpeaking()"
                 [activeSyllableIndex]="speechService.activeSyllableIndex()"
