@@ -56,19 +56,43 @@ import type {
           </aside>
 
           <!-- Area esercizio -->
-          <main class="exercise-area">
+          <main class="exercise-area" aria-label="Esercizio di matematica">
             <div class="card">
+              <div class="mb-8 flex items-center gap-4">
+                <div class="min-w-0 flex-1">
+                  <div class="mb-2 flex items-center justify-between gap-3">
+                    <span class="text-sm font-bold text-[var(--color-text-secondary)]">
+                      Esercizio {{ exerciseNumber() }} di {{ totalExercises }}
+                    </span>
+                    <span class="text-sm font-bold text-[var(--color-primary-strong)]">
+                      {{ progressPercent() }}%
+                    </span>
+                  </div>
+                  <div
+                    class="h-3 w-full overflow-hidden rounded-full bg-slate-200"
+                    role="progressbar"
+                    aria-label="Progresso esercizi"
+                    aria-valuemin="1"
+                    [attr.aria-valuemax]="totalExercises"
+                    [attr.aria-valuenow]="exerciseNumber()"
+                  >
+                    <div
+                      class="h-full rounded-full bg-[var(--color-primary-strong)] transition-[width] duration-300"
+                      [style.width.%]="progressPercent()"
+                    ></div>
+                  </div>
+                </div>
+                <button
+                  (click)="nextExercise()"
+                  class="btn btn-secondary btn-sm shrink-0"
+                  aria-label="Cambia esercizio"
+                >
+                  Cambia
+                </button>
+              </div>
+
               <!-- Operazione matematica -->
               <div class="text-center">
-                <div class="mb-8">
-                  <button
-                    (click)="nextExercise()"
-                    class="btn btn-secondary btn-sm"
-                    aria-label="Cambia esercizio"
-                  >
-                    ➜ Cambia esercizio
-                  </button>
-                </div>
                 <div class="operation-display">
                   {{ formatOperation() }}
                 </div>
@@ -164,6 +188,8 @@ export class AdditionSubtractionComponent {
   currentOperation = signal<MathOperation>(this.generateNewOperation());
   userAnswerStr = signal<string>('');
   attemptCount = signal<number>(0);
+  exerciseNumber = signal(1);
+  readonly totalExercises = 10;
   showFeedback = signal<boolean>(false);
   feedbackType = signal<FeedbackType>('retry');
   inputFocused = signal<boolean>(true);
@@ -171,6 +197,8 @@ export class AdditionSubtractionComponent {
   answerInput = viewChild<ElementRef<HTMLInputElement>>('answerInput');
 
   // Computed
+  progressPercent = computed(() => (this.exerciseNumber() / this.totalExercises) * 100);
+
   isCorrect = computed(() => {
     const userAnswer = Number(this.userAnswerStr());
     const correctAnswer = this.currentOperation().result;
@@ -180,7 +208,9 @@ export class AdditionSubtractionComponent {
   shouldShowAnswer = computed(() => this.attemptCount() >= 3 && !this.isCorrect());
 
   feedbackMessage = computed(() => {
-    if (this.isCorrect()) {
+    if (!this.userAnswerStr()) {
+      return 'Inserisci una risposta per verificare.';
+    } else if (this.isCorrect()) {
       return this.feedbackService.getMessage('success');
     } else if (this.shouldShowAnswer()) {
       return this.feedbackService.getMessage('show-answer', this.currentOperation().result);
@@ -234,6 +264,7 @@ export class AdditionSubtractionComponent {
     }));
 
     // Genera nuova operazione con le nuove opzioni
+    this.exerciseNumber.set(1);
     this.resetExercise();
   }
 
@@ -252,6 +283,8 @@ export class AdditionSubtractionComponent {
 
   verifyAnswer(): void {
     if (!this.userAnswerStr()) {
+      this.feedbackType.set('retry');
+      this.showFeedback.set(true);
       return;
     }
 
@@ -273,11 +306,13 @@ export class AdditionSubtractionComponent {
     this.showFeedback.set(false);
     this.userAnswerStr.set('');
     this.inputFocused.set(true);
+    this.focusInput();
   }
 
   nextExercise(): void {
+    this.exerciseNumber.update((number) => (number === this.totalExercises ? 1 : number + 1));
     this.resetExercise();
-    this.inputFocused.set(true);
+    this.focusInput();
   }
 
   private resetExercise(): void {
