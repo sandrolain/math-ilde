@@ -40,7 +40,7 @@ interface RowOfElements {
                       [ngSrc]="'/icons/fruits/' + element.fruit + '.png'"
                       [alt]="getElementAriaLabel(element)"
                       fill
-                      sizes="(min-width: 768px) 64px, 32px"
+                      sizes="100vw"
                       class="w-full h-full object-contain"
                     />
                   </div>
