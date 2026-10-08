@@ -505,6 +505,13 @@ export class HomeComponent {
       description: 'Scopri le figure',
       ariaLabel: 'Vai alla sezione Geometria di Base',
     },
+    {
+      route: '/laboratorio',
+      icon: '🧪',
+      title: 'Laboratorio',
+      description: 'Esplora e osserva',
+      ariaLabel: 'Vai al Laboratorio delle figure',
+    },
   ];
 
   readonly readingActivities: Activity[] = [

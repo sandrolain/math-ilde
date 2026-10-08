@@ -90,6 +90,11 @@ export const routes: Routes = [
       import('./pages/geometry/geometry.component').then((m) => m.GeometryComponent),
   },
   {
+    path: 'laboratorio',
+    loadComponent: () =>
+      import('./pages/laboratory/laboratory.component').then((m) => m.LaboratoryComponent),
+  },
+  {
     path: 'giochi/memory',
     loadComponent: () =>
       import('./pages/games/memory/game-memory.component').then((m) => m.GameMemoryComponent),
