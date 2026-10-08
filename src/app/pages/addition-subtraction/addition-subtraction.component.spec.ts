@@ -105,6 +105,23 @@ describe('AdditionSubtractionComponent', () => {
       expect(component.feedbackType()).toBe('success');
     });
 
+    it('shows session summary after tenth exercise and starts a new session', () => {
+      for (let exercise = 1; exercise < component.totalExercises; exercise += 1) {
+        component.nextExercise();
+      }
+
+      expect(component.exerciseNumber()).toBe(10);
+      component.nextExercise();
+
+      expect(component.sessionSummary()).not.toBeNull();
+      expect(component.sessionSummary()?.status).toBe('completed');
+
+      component.startNewSession();
+
+      expect(component.sessionSummary()).toBeNull();
+      expect(component.exerciseNumber()).toBe(1);
+    });
+
     it('should correctly verify a wrong answer for simple subtraction', () => {
       const operation: MathOperation = {
         operand1: 10,

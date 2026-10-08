@@ -14,10 +14,12 @@ import { OptionsControlComponent } from '../../components/options-control/option
 import { VisualRepresentationComponent } from '../../components/visual-representation/visual-representation.component';
 import { FeedbackComponent } from '../../components/feedback/feedback.component';
 import { NumericKeyboardComponent } from '../../components/numeric-keyboard/numeric-keyboard.component';
+import { SessionSummaryComponent } from '../../components/session-summary/session-summary.component';
 import { MathExerciseService } from '../../services/math-exercise.service';
 import { OptionsStorageService } from '../../services/options-storage.service';
 import { FeedbackService } from '../../services/feedback.service';
 import { HintService } from '../../services/hint.service';
+import { ExerciseSessionService } from '../../services/exercise-session.service';
 import type {
   MathOperation,
   OperationType,
@@ -26,6 +28,7 @@ import type {
   FeedbackType,
   ExerciseOptions,
 } from '../../types/exercise.types';
+import type { ExerciseSession } from '../../types/learning.types';
 
 @Component({
   selector: 'app-addition-subtraction',
@@ -36,6 +39,7 @@ import type {
     VisualRepresentationComponent,
     FeedbackComponent,
     NumericKeyboardComponent,
+    SessionSummaryComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -58,7 +62,13 @@ import type {
 
           <!-- Area esercizio -->
           <main class="exercise-area" aria-label="Esercizio di matematica">
-            <div class="card">
+            @if (sessionSummary(); as summary) {
+              <div class="card">
+                <app-session-summary [session]="summary" (restart)="startNewSession()" />
+              </div>
+            }
+
+            <div class="card" [class.hidden]="sessionSummary() !== null">
               <div class="mb-8 flex items-center gap-4">
                 <div class="min-w-0 flex-1">
                   <div class="mb-2 flex items-center justify-between gap-3">
@@ -183,6 +193,7 @@ export class AdditionSubtractionComponent {
   private storageService = inject(OptionsStorageService);
   private feedbackService = inject(FeedbackService);
   private hintService = inject(HintService);
+  private sessionService = inject(ExerciseSessionService);
 
   // Stato
   exerciseOptions = signal<ExerciseOptions>(
@@ -198,8 +209,10 @@ export class AdditionSubtractionComponent {
   showFeedback = signal<boolean>(false);
   feedbackType = signal<FeedbackType>('retry');
   inputFocused = signal<boolean>(true);
+  sessionSummary = signal<ExerciseSession | null>(null);
 
   answerInput = viewChild<ElementRef<HTMLInputElement>>('answerInput');
+  private exerciseId = signal(this.createExerciseId());
 
   // Computed
   progressPercent = computed(() => (this.exerciseNumber() / this.totalExercises) * 100);
@@ -233,6 +246,11 @@ export class AdditionSubtractionComponent {
   );
 
   constructor() {
+    const activeSession = this.sessionService.currentSession();
+    if (!activeSession || activeSession.skillId !== 'addition-subtraction') {
+      this.sessionService.startSession('addition-subtraction', this.totalExercises);
+    }
+
     // Effetto per salvare le opzioni quando cambiano
     effect(() => {
       this.storageService.saveOptions(this.exerciseOptions());
@@ -303,6 +321,7 @@ export class AdditionSubtractionComponent {
     }
 
     this.attemptCount.update((count) => count + 1);
+    this.recordAttempt();
 
     if (this.isCorrect()) {
       this.correctAnswers.update((count) => count + 1);
@@ -325,6 +344,12 @@ export class AdditionSubtractionComponent {
   }
 
   nextExercise(): void {
+    if (this.exerciseNumber() === this.totalExercises) {
+      this.sessionSummary.set(this.sessionService.completeSession());
+      this.showFeedback.set(false);
+      return;
+    }
+
     this.exerciseNumber.update((number) => (number === this.totalExercises ? 1 : number + 1));
     this.resetExercise();
     this.focusInput();
@@ -332,11 +357,43 @@ export class AdditionSubtractionComponent {
 
   private resetExercise(): void {
     this.currentOperation.set(this.generateNewOperation());
+    this.exerciseId.set(this.createExerciseId());
     this.userAnswerStr.set('');
     this.attemptCount.set(0);
     this.showFeedback.set(false);
     this.feedbackType.set('retry');
     this.inputFocused.set(true);
+  }
+
+  startNewSession(): void {
+    this.sessionSummary.set(null);
+    this.exerciseNumber.set(1);
+    this.correctAnswers.set(0);
+    this.sessionService.startSession('addition-subtraction', this.totalExercises);
+    this.resetExercise();
+    this.focusInput();
+  }
+
+  private recordAttempt(): void {
+    const session = this.sessionService.currentSession();
+    if (!session) {
+      return;
+    }
+
+    this.sessionService.recordAttempt({
+      id: `${this.exerciseId()}-attempt-${this.attemptCount()}`,
+      skillId: 'addition-subtraction',
+      exerciseId: this.exerciseId(),
+      answer: this.userAnswerStr(),
+      correct: this.isCorrect(),
+      hintsUsed: this.hintService.getLevel(this.attemptCount()),
+      startedAt: Date.now(),
+      completedAt: Date.now(),
+    });
+  }
+
+  private createExerciseId(): string {
+    return `addition-subtraction-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
   getInputClasses(): string {
