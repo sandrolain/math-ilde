@@ -164,11 +164,12 @@ interface Activity {
       }
 
       .home-hero {
-        display: flex;
+        display: grid;
+        grid-template-columns: auto 1fr;
         align-items: center;
-        justify-content: space-between;
         gap: 2rem;
         margin-bottom: 2rem;
+        text-align: center;
       }
 
       .eyebrow {
@@ -297,7 +298,6 @@ interface Activity {
       .activity-card-featured {
         position: relative;
         align-items: flex-start;
-        min-height: 9rem;
         padding: 1.35rem;
         border: 2px solid rgba(36, 86, 106, 0.12);
         border-radius: 1.25rem;
@@ -393,7 +393,8 @@ interface Activity {
         }
 
         .home-hero {
-          align-items: flex-start;
+          grid-template-columns: 1fr;
+          justify-items: center;
         }
 
         .home-mascot {

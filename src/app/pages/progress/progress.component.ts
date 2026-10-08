@@ -84,6 +84,7 @@ import { LearningProgressStorageService } from '../../services/learning-progress
       .progress-page { width: min(100% - 2rem, 68rem); margin: 0 auto; padding: 2rem 0 4rem; }
       .page-hero { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 1.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
       .back-link, .settings-link { color: var(--color-primary-strong); font-weight: 800; text-decoration: none; }
+      .back-link, .hero-action { display: inline-flex; align-items: center; min-height: 44px; }
       .hero-copy { display: flex; align-items: center; gap: 1rem; }
       .hero-mark { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 1rem; background: var(--color-tertiary); color: var(--color-primary-strong); font-size: 2rem; }
       h1 { margin: 0; color: var(--color-text-primary); font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1; }

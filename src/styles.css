@@ -26,6 +26,8 @@
   /* Backgrounds */
   --color-bg-primary: #fff9f0; /* crema */
   --color-bg-secondary: #f0f8ff; /* alice blue */
+  --color-surface: #ffffff;
+  --color-background: #f0f8ff;
 
   /* Testo */
   --color-text-primary: #4a5568; /* grigio scuro soft */
