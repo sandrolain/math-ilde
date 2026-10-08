@@ -77,12 +77,18 @@ interface RowOfElements {
 
       <p class="max-w-2xl text-center text-sm" style="color: var(--color-text-secondary);">
         {{ visualLegend() }}
-        Totale: {{ operation().result }}
+        @if (revealAnswer()) {
+          Totale: {{ operation().result }}
+        }
       </p>
 
       @if (showsAdditiveModels()) {
         <div class="flex flex-wrap justify-center gap-4 w-full" aria-label="Rappresentazioni aggiuntive">
-          <app-number-line [start]="operation().operand1" [target]="operation().result" />
+          <app-number-line
+            [start]="operation().operand1"
+            [target]="operation().result"
+            [showAnswer]="revealAnswer()"
+          />
           @if (operation().result <= 10) {
             <app-ten-frame [filled]="operation().result" />
           }
@@ -133,6 +139,7 @@ interface RowOfElements {
 export class VisualRepresentationComponent {
   operation = input.required<MathOperation>();
   displayMode = input<'grouped' | 'total'>('grouped');
+  revealAnswer = input(true);
 
   private readonly availableFruits: FruitType[] = [
     'apple',

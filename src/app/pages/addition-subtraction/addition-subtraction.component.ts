@@ -112,7 +112,10 @@ import type { ExerciseSession } from '../../types/learning.types';
               <!-- Rappresentazione visuale -->
               @if (exerciseOptions().showVisuals) {
                 <div class="my-8">
-                  <app-visual-representation [operation]="currentOperation()" />
+                  <app-visual-representation
+                    [operation]="currentOperation()"
+                    [revealAnswer]="false"
+                  />
                 </div>
               }
 

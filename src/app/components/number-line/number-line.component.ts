@@ -6,9 +6,11 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   template: `
     <section class="number-line" aria-labelledby="number-line-title">
       <h3 id="number-line-title">Linea dei numeri</h3>
-      <p class="number-line__description">
-        Parti da {{ start() }} e arriva a {{ target() }}.
-      </p>
+      @if (showAnswer()) {
+        <p class="number-line__description">Parti da {{ start() }} e arriva a {{ target() }}.</p>
+      } @else {
+        <p class="number-line__description">Osserva i passi sulla linea dei numeri.</p>
+      }
       <div
         class="number-line__track"
         [style.--point-count]="points().length"
@@ -25,9 +27,13 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
           </span>
         }
       </div>
-      <p class="sr-only">
-        Il punto di partenza è {{ start() }}. Il risultato è {{ target() }}.
-      </p>
+      @if (showAnswer()) {
+        <p class="sr-only">
+          Il punto di partenza è {{ start() }}. Il risultato è {{ target() }}.
+        </p>
+      } @else {
+        <p class="sr-only">Linea dei numeri da osservare durante l'esercizio.</p>
+      }
     </section>
   `,
   styles: [
@@ -102,6 +108,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 export class NumberLineComponent {
   start = input.required<number>();
   target = input.required<number>();
+  showAnswer = input(true);
 
   points = computed(() => {
     const first = Math.min(this.start(), this.target());
