@@ -18,11 +18,20 @@ interface RowOfElements {
   selector: 'app-visual-representation',
   imports: [NgOptimizedImage],
   template: `
-    <div class="flex flex-col items-center justify-center gap-4 md:gap-6 p-6 min-h-50">
+    <div
+      class="flex flex-col items-center justify-center gap-4 md:gap-6 p-6 min-h-50"
+      role="group"
+      aria-label="Rappresentazione visuale dell'operazione"
+    >
+      <p class="max-w-2xl text-center text-base font-semibold" style="color: var(--color-text-primary);">
+        {{ visualDescription() }}
+      </p>
+
       @for (group of groupedElements(); track group.groupIndex) {
         <div
           class="flex flex-col gap-3 items-center p-4 rounded-2xl border-3 min-w-12 min-h-20"
           style="border-color: var(--color-primary); background-color: rgba(255, 255, 255, 0.5);"
+          [attr.aria-label]="'Gruppo ' + (group.groupIndex + 1)"
         >
           @if (group.rows.length === 0) {
             <div class="text-2xl font-bold opacity-30" style="color: var(--color-text-primary);">
@@ -38,7 +47,8 @@ interface RowOfElements {
                   >
                     <img
                       [ngSrc]="'/icons/fruits/' + element.fruit + '.png'"
-                      [alt]="getElementAriaLabel(element)"
+                      alt=""
+                      aria-hidden="true"
                       fill
                       sizes="100vw"
                       class="w-full h-full object-contain"
@@ -61,6 +71,11 @@ interface RowOfElements {
           </div>
         }
       }
+
+      <p class="max-w-2xl text-center text-sm" style="color: var(--color-text-secondary);">
+        {{ visualLegend() }}
+        Totale: {{ operation().result }}
+      </p>
     </div>
   `,
   styles: [
@@ -125,6 +140,36 @@ export class VisualRepresentationComponent {
     // La divisione graficamente è solo una separazione, non ha operatore
     if (op.operator === '÷') return '';
     return op.operator;
+  });
+
+  visualDescription = computed(() => {
+    const op = this.operation();
+
+    switch (op.operator) {
+      case '+':
+        return op.operand3 === undefined
+          ? `Rappresentazione: aggiungi ${op.operand1} elementi a ${op.operand2} elementi.`
+          : `Rappresentazione: aggiungi tre gruppi di ${op.operand1}, ${op.operand2} e ${op.operand3} elementi.`;
+      case '-':
+        return `Rappresentazione: parti da ${op.operand1} elementi e togli quelli barrati.`;
+      case '×':
+        return `Rappresentazione: ${op.operand2} gruppi uguali da ${op.operand1} elementi.`;
+      case '÷':
+        return `Rappresentazione: distribuisci ${op.operand1} elementi in ${op.operand2} gruppi uguali.`;
+    }
+  });
+
+  visualLegend = computed(() => {
+    switch (this.operation().operator) {
+      case '+':
+        return 'Ogni gruppo colorato rappresenta un addendo.';
+      case '-':
+        return 'Gli elementi barrati sono quelli da togliere.';
+      case '×':
+        return 'Ogni riquadro rappresenta un gruppo uguale.';
+      case '÷':
+        return 'Ogni riquadro rappresenta un gruppo della divisione.';
+    }
   });
 
   // Computed per generare gli elementi visivi raggruppati in righe di 10
