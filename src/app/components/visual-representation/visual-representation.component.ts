@@ -92,7 +92,7 @@ interface RowOfElements {
             [highlightPoints]="revealAnswer()"
             [rangeEnd]="numberLineRange()"
           />
-          @if (operation().result <= 10) {
+          @if (showTenFrame() && operation().result <= 10) {
             <app-ten-frame [filled]="operation().result" />
           }
         </div>
@@ -143,6 +143,7 @@ export class VisualRepresentationComponent {
   operation = input.required<MathOperation>();
   displayMode = input<'grouped' | 'total'>('grouped');
   revealAnswer = input(true);
+  showTenFrame = input(true);
 
   numberLineEnd = computed(() => {
     const operation = this.operation();

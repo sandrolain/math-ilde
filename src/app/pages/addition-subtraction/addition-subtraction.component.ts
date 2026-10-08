@@ -115,6 +115,7 @@ import type { ExerciseSession } from '../../types/learning.types';
                   <app-visual-representation
                     [operation]="currentOperation()"
                     [revealAnswer]="false"
+                    [showTenFrame]="false"
                   />
                 </div>
               }
