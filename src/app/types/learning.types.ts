@@ -33,3 +33,10 @@ export interface ExerciseSession {
   completedAt: number | null;
   status: ExerciseSessionStatus;
 }
+
+export interface LearningProgressState {
+  version: 1;
+  sessions: ExerciseSession[];
+  activeSessionId: string | null;
+  updatedAt: number;
+}

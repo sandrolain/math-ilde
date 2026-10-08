@@ -1,4 +1,6 @@
+import { TestBed } from '@angular/core/testing';
 import { ExerciseSessionService } from './exercise-session.service';
+import { LearningProgressStorageService } from './learning-progress-storage.service';
 import type { ExerciseAttempt } from '../types/learning.types';
 
 function createAttempt(overrides: Partial<ExerciseAttempt> = {}): ExerciseAttempt {
@@ -16,8 +18,22 @@ function createAttempt(overrides: Partial<ExerciseAttempt> = {}): ExerciseAttemp
 }
 
 describe('ExerciseSessionService', () => {
+  let storage: LearningProgressStorageService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [LearningProgressStorageService],
+    });
+    storage = TestBed.inject(LearningProgressStorageService);
+    storage.clear();
+  });
+
+  function createService(): ExerciseSessionService {
+    return TestBed.runInInjectionContext(() => new ExerciseSessionService());
+  }
+
   it('starts session with default target', () => {
-    const service = new ExerciseSessionService();
+    const service = createService();
 
     const session = service.startSession('addition-subtraction');
 
@@ -28,7 +44,7 @@ describe('ExerciseSessionService', () => {
   });
 
   it('rejects invalid target size', () => {
-    const service = new ExerciseSessionService();
+    const service = createService();
 
     expect(() => service.startSession('addition-subtraction', 0)).toThrow(
       'targetExercises deve essere un intero positivo',
@@ -36,7 +52,7 @@ describe('ExerciseSessionService', () => {
   });
 
   it('records attempts and counts each solved exercise once', () => {
-    const service = new ExerciseSessionService();
+    const service = createService();
     service.startSession('addition-subtraction');
 
     service.recordAttempt(createAttempt({ correct: false }));
@@ -53,7 +69,7 @@ describe('ExerciseSessionService', () => {
   });
 
   it('rejects attempts from another skill or duplicate ids', () => {
-    const service = new ExerciseSessionService();
+    const service = createService();
     service.startSession('addition-subtraction');
 
     expect(() =>
@@ -65,7 +81,7 @@ describe('ExerciseSessionService', () => {
   });
 
   it('completes and resets session', () => {
-    const service = new ExerciseSessionService();
+    const service = createService();
     service.startSession('addition-subtraction');
 
     const completed = service.completeSession();
@@ -75,5 +91,45 @@ describe('ExerciseSessionService', () => {
 
     service.resetSession();
     expect(service.currentSession()).toBeNull();
+  });
+
+  it('restores active session from local storage', () => {
+    const firstService = createService();
+    const started = firstService.startSession('addition-subtraction');
+    firstService.recordAttempt(createAttempt());
+
+    const restoredService = createService();
+
+    expect(restoredService.currentSession()).toEqual({
+      ...started,
+      attempts: [createAttempt()],
+      completedExercises: 1,
+      correctAnswers: 1,
+    });
+  });
+
+  it('resets one skill without deleting other progress', () => {
+    const service = createService();
+    service.startSession('addition-subtraction');
+    service.recordAttempt(createAttempt());
+    service.startSession('fractions');
+    service.recordAttempt(createAttempt({ id: 'attempt-2', skillId: 'fractions' }));
+
+    service.resetSkill('fractions');
+
+    const stored = storage.load();
+    expect(stored.sessions).toHaveLength(1);
+    expect(stored.sessions[0].skillId).toBe('addition-subtraction');
+  });
+
+  it('resets all progress and clears storage', () => {
+    const service = createService();
+    service.startSession('addition-subtraction');
+    service.recordAttempt(createAttempt());
+
+    service.resetAllProgress();
+
+    expect(service.currentSession()).toBeNull();
+    expect(storage.load().sessions).toEqual([]);
   });
 });
