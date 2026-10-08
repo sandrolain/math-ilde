@@ -88,7 +88,7 @@ interface RowOfElements {
             [start]="operation().operand1"
             [target]="operation().result"
             [showAnswer]="revealAnswer()"
-            [showLabels]="revealAnswer()"
+            [showLabels]="true"
             [highlightPoints]="revealAnswer()"
             [rangeEnd]="numberLineRange()"
           />
