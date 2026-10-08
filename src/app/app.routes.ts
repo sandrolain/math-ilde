@@ -95,6 +95,18 @@ export const routes: Routes = [
       import('./pages/games/memory/game-memory.component').then((m) => m.GameMemoryComponent),
   },
   {
+    path: 'percorsi',
+    loadComponent: () =>
+      import('./pages/learning-paths/learning-paths.component').then(
+        (m) => m.LearningPathsComponent,
+      ),
+  },
+  {
+    path: 'problemi',
+    loadComponent: () =>
+      import('./pages/problems/problems.component').then((m) => m.ProblemsComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },
