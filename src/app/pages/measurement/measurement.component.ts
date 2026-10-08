@@ -10,6 +10,7 @@ import { HeaderComponent } from '../../components/header/header.component';
 import { FeedbackComponent } from '../../components/feedback/feedback.component';
 import { NumericKeyboardComponent } from '../../components/numeric-keyboard/numeric-keyboard.component';
 import { SidebarOptionsComponent } from '../../components/sidebar-options/sidebar-options.component';
+import { MeasurementRulerComponent } from '../../components/measurement-ruler/measurement-ruler.component';
 import { rnd } from '../../utils/math-utils';
 import { FeedbackService } from '../../services/feedback.service';
 import { MeasurementOptionsStorageService } from '../../services/measurement-options-storage.service';
@@ -154,7 +155,13 @@ function generateExercise(opts: MeasurementOptions): MeasurementExercise {
 
 @Component({
   selector: 'app-measurement',
-  imports: [HeaderComponent, FeedbackComponent, NumericKeyboardComponent, SidebarOptionsComponent],
+  imports: [
+    HeaderComponent,
+    FeedbackComponent,
+    NumericKeyboardComponent,
+    SidebarOptionsComponent,
+    MeasurementRulerComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
@@ -356,6 +363,12 @@ function generateExercise(opts: MeasurementOptions): MeasurementExercise {
                   <span class="answer-digits">{{ answerStr() || '?' }}</span>
                   <span class="conversion-unit">{{ exercise().toUnit }}</span>
                 </div>
+
+                <app-measurement-ruler
+                  [value]="exercise().correctAnswer"
+                  [max]="rulerMax()"
+                  [unit]="exercise().toUnit"
+                />
               </div>
 
               <!-- Suggerimento -->
@@ -513,6 +526,8 @@ export class MeasurementComponent {
   categoryEmoji = computed(() => CATEGORY_EMOJIS[this.exercise().category] ?? '📐');
 
   categoryLabel = computed(() => CATEGORY_LABELS[this.exercise().category] ?? '');
+
+  rulerMax = computed(() => Math.max(10, Math.ceil(this.exercise().correctAnswer / 10) * 10));
 
   feedbackMessage = computed(() => {
     const ex = this.exercise();

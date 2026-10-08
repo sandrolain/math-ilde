@@ -199,6 +199,9 @@ function handEnd(angleDeg: number, length: number): { x: number; y: number } {
                     />
                   </div>
                 </div>
+                <p class="clock-legend" aria-label="Legenda dell'orologio">
+                  Lancetta corta: ore. Lancetta lunga: minuti.
+                </p>
 
                 <!-- Input ore : minuti -->
                 <div class="max-w-sm mx-auto space-y-6">
@@ -399,6 +402,14 @@ function handEnd(angleDeg: number, length: number): { x: number; y: number } {
       .clock-svg {
         border-radius: 50%;
         overflow: visible;
+      }
+
+      .clock-legend {
+        max-width: 22rem;
+        margin: -1.5rem auto 2rem;
+        color: var(--color-text-secondary);
+        font-size: 1rem;
+        text-align: center;
       }
 
       /* ---- Input ore:minuti (analog→digital) ---- */

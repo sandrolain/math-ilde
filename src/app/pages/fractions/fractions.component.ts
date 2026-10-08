@@ -189,7 +189,7 @@ function generateChoices(
                 </p>
 
                 <!-- Figura centrale -->
-                <div class="flex justify-center mb-10" aria-hidden="true">
+                <div class="flex justify-center mb-10">
                   <div class="fraction-figure-wrapper">
                     @if (exercise().figureType === 'pie') {
                       <svg
@@ -211,7 +211,11 @@ function generateChoices(
                     }
 
                     @if (exercise().figureType === 'bar') {
-                      <div class="bar-container" [attr.aria-label]="figureAriaLabel()">
+                      <div
+                        class="bar-container"
+                        role="img"
+                        [attr.aria-label]="figureAriaLabel()"
+                      >
                         @for (cell of barCells(); track $index) {
                           <div
                             class="bar-cell"
