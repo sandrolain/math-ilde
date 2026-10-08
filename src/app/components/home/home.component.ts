@@ -187,7 +187,6 @@ interface Activity {
         font-size: clamp(2.25rem, 6vw, 4.5rem);
         font-weight: 800;
         letter-spacing: -0.04em;
-        line-height: 1;
       }
 
       .home-subtitle {
