@@ -2,6 +2,7 @@ import { Component, input, computed } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { NumberLineComponent } from '../number-line/number-line.component';
 import { TenFrameComponent } from '../ten-frame/ten-frame.component';
+import { ArrayRepresentationComponent } from '../array-representation/array-representation.component';
 import type {
   MathOperation,
   VisualElement,
@@ -18,7 +19,7 @@ interface RowOfElements {
 
 @Component({
   selector: 'app-visual-representation',
-  imports: [NgOptimizedImage, NumberLineComponent, TenFrameComponent],
+  imports: [NgOptimizedImage, NumberLineComponent, TenFrameComponent, ArrayRepresentationComponent],
   template: `
     <div
       class="flex flex-col items-center justify-center gap-4 md:gap-6 p-6 min-h-50"
@@ -86,6 +87,14 @@ interface RowOfElements {
             <app-ten-frame [filled]="operation().result" />
           }
         </div>
+      }
+
+      @if (showsArrayModel()) {
+        <app-array-representation
+          [rows]="operation().operator === '×' ? operation().operand2 : operation().operand2"
+          [columns]="operation().operator === '×' ? operation().operand1 : operation().result"
+          [title]="operation().operator === '×' ? 'Schieramento della moltiplicazione' : 'Distribuzione della divisione'"
+        />
       }
     </div>
   `,
@@ -186,6 +195,11 @@ export class VisualRepresentationComponent {
   showsAdditiveModels = computed(() => {
     const op = this.operation();
     return (op.operator === '+' || op.operator === '-') && this.getTotalElements() <= 20;
+  });
+
+  showsArrayModel = computed(() => {
+    const op = this.operation();
+    return (op.operator === '×' || op.operator === '÷') && this.getTotalElements() <= 50;
   });
 
   // Computed per generare gli elementi visivi raggruppati in righe di 10
