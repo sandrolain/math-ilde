@@ -119,7 +119,7 @@ import { LearningProgressStorageService } from '../../services/learning-progress
       .tools { display: flex; flex-wrap: wrap; gap: .75rem; }
       .tools input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       .btn-danger { border: 2px solid #b42318; background: #fff1f0; color: #8a1c13; }
-      .notice { margin: 0; color: var(--color-success-strong); font-weight: 700; }
+      .notice { color: var(--color-success-strong); font-weight: 700; }
       @media (max-width: 52rem) { .page-hero { grid-template-areas: "hero hero" "back action"; grid-template-columns: 1fr 1fr; } .hero-copy { justify-self: center; } .back-link { justify-self: start; } .hero-action { justify-self: end; } .summary-panel { align-items: start; flex-direction: column; } .summary-grid { width: 100%; } }
       @media (max-width: 42rem) { .dashboard-grid, .milestone-list { grid-template-columns: 1fr; } .summary-grid { gap: .75rem; } .summary-grid strong { font-size: 1.8rem; } .tools > * { width: 100%; } }
     `,
