@@ -120,6 +120,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/progress/progress.component').then((m) => m.ProgressComponent),
   },
   {
+    path: 'impostazioni-apprendimento',
+    loadComponent: () =>
+      import('./pages/learning-settings/learning-settings.component').then(
+        (m) => m.LearningSettingsComponent,
+      ),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

@@ -39,9 +39,15 @@ import { LearningProgressStorageService } from '../../services/learning-progress
           </label>
           <button type="button" class="btn btn-danger" (click)="resetProgress()">Azzera tutto</button>
         </div>
+        <a routerLink="/impostazioni-apprendimento" class="settings-link">Impostazioni adulto →</a>
         @if (notice()) {
           <p class="notice" role="status">{{ notice() }}</p>
         }
+      </section>
+      <section class="next-step" aria-labelledby="next-title">
+        <h2 id="next-title">Prossimo passo</h2>
+        <p>{{ recommendation() }}</p>
+        <a routerLink="/ripasso" class="btn btn-secondary btn-sm">Vai al ripasso</a>
       </section>
     </main>
   `,
@@ -94,6 +100,11 @@ export class ProgressComponent {
       { label: 'Occhio di falco', detail: 'Dai 10 risposte corrette', done: correct >= 10 },
     ];
   });
+  readonly recommendation = computed(() =>
+    this.totalExercises() === 0
+      ? 'Inizia con Addizioni e sottrazioni per costruire le basi.'
+      : 'Continua ad allenarti: ogni risposta ti aiuta a diventare più sicuro.',
+  );
 
   exportProgress(): void {
     const blob = new Blob([this.storage.exportJson()], { type: 'application/json' });
