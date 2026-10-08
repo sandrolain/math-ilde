@@ -1,5 +1,7 @@
 import { Component, input, computed } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
+import { NumberLineComponent } from '../number-line/number-line.component';
+import { TenFrameComponent } from '../ten-frame/ten-frame.component';
 import type {
   MathOperation,
   VisualElement,
@@ -16,7 +18,7 @@ interface RowOfElements {
 
 @Component({
   selector: 'app-visual-representation',
-  imports: [NgOptimizedImage],
+  imports: [NgOptimizedImage, NumberLineComponent, TenFrameComponent],
   template: `
     <div
       class="flex flex-col items-center justify-center gap-4 md:gap-6 p-6 min-h-50"
@@ -76,6 +78,15 @@ interface RowOfElements {
         {{ visualLegend() }}
         Totale: {{ operation().result }}
       </p>
+
+      @if (showsAdditiveModels()) {
+        <div class="flex flex-wrap justify-center gap-4 w-full" aria-label="Rappresentazioni aggiuntive">
+          <app-number-line [start]="operation().operand1" [target]="operation().result" />
+          @if (operation().result <= 10) {
+            <app-ten-frame [filled]="operation().result" />
+          }
+        </div>
+      }
     </div>
   `,
   styles: [
@@ -170,6 +181,11 @@ export class VisualRepresentationComponent {
       case '÷':
         return 'Ogni riquadro rappresenta un gruppo della divisione.';
     }
+  });
+
+  showsAdditiveModels = computed(() => {
+    const op = this.operation();
+    return (op.operator === '+' || op.operator === '-') && this.getTotalElements() <= 20;
   });
 
   // Computed per generare gli elementi visivi raggruppati in righe di 10
