@@ -13,7 +13,7 @@ import { LearningProgressStorageService } from '../../services/learning-progress
         <div class="hero-copy">
           <span class="hero-mark" aria-hidden="true">✦</span>
           <div>
-            <h1>Il mio diario dei traguardi</h1>
+            <h1>Il mio diario</h1>
             <p class="intro">Guarda i passi che hai fatto. Ogni esercizio conta!</p>
           </div>
         </div>
@@ -82,30 +82,29 @@ import { LearningProgressStorageService } from '../../services/learning-progress
     `
       :host { display: block; }
       .progress-page { width: min(100% - 2rem, 68rem); margin: 0 auto; padding: 2rem 0 4rem; }
-      .page-hero { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 1.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+      .page-hero { display: grid; grid-template-areas: "back hero action"; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 1.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
       .back-link, .settings-link { color: var(--color-primary-strong); font-weight: 800; text-decoration: none; }
       .back-link, .hero-action { display: inline-flex; align-items: center; min-height: 44px; }
-      .hero-copy { display: flex; align-items: center; gap: 1rem; }
+      .back-link { grid-area: back; justify-self: start; }
+      .hero-copy { display: flex; grid-area: hero; align-items: center; gap: 1rem; }
       .hero-mark { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 1rem; background: var(--color-tertiary); color: var(--color-primary-strong); font-size: 2rem; }
       h1 { margin: 0; color: var(--color-text-primary); font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1; }
       .intro { margin: .65rem 0 0; color: var(--color-text-secondary); font-size: 1.1rem; }
-      .hero-action { padding: .85rem 1rem; border-radius: .8rem; background: var(--color-action); color: white; font-weight: 800; text-decoration: none; }
+      .hero-action { grid-area: action; justify-self: end; padding: .85rem 1rem; border-radius: .8rem; background: var(--color-action); color: white; font-weight: 800; text-decoration: none; }
       .summary-panel, .milestones, .adult-tools { margin-top: 1.5rem; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-surface); }
       .summary-panel { display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
-      .summary-intro { display: grid; gap: .3rem; min-width: 10rem; }
       .summary-intro strong, h2 { color: var(--color-text-primary); }
       .summary-intro span, .section-heading p, .adult-tools p, .next-step p, small { color: var(--color-text-secondary); }
-      .summary-grid { display: grid; grid-template-columns: repeat(3, minmax(7rem, 1fr)); gap: 1.5rem; flex: 1; }
+      .summary-grid { display: grid; grid-template-columns: repeat(3, minmax(7rem, 1fr)); gap: 1rem; flex: 1; }
       .summary-grid div { display: grid; gap: .25rem; }
       .summary-grid strong { color: var(--color-primary-strong); font-size: 2.2rem; line-height: 1; }
       .summary-grid span { color: var(--color-text-secondary); font-size: .9rem; }
       .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(16rem, .65fr); gap: 1.5rem; }
       .section-heading { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
       h2 { margin: 0; font-size: 1.35rem; }
-      .section-heading p { margin: .35rem 0 0; }
       .section-count { padding: .35rem .6rem; border-radius: .5rem; background: var(--color-info-surface); color: var(--color-primary-strong); font-weight: 800; }
       .milestone-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-top: 1.25rem; }
-      .milestone { display: flex; align-items: start; gap: .7rem; min-height: 5.5rem; padding: .9rem; border-radius: .75rem; background: var(--color-bg-secondary); }
+      .milestone { display: flex; align-items: start; gap: .7rem; padding: .9rem; border-radius: .75rem; background: var(--color-bg-secondary); }
       .milestone span:last-child { display: grid; gap: .25rem; }
       .milestone__icon { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border: 2px solid var(--color-border); border-radius: 50%; color: var(--color-text-secondary); font-weight: 900; }
       .milestone--done { background: var(--color-success-surface); }
@@ -113,16 +112,15 @@ import { LearningProgressStorageService } from '../../services/learning-progress
       .next-step { display: flex; flex-direction: column; align-items: start; justify-content: center; gap: .8rem; margin-top: 1.5rem; padding: 1.5rem; border-radius: 1rem; background: var(--color-primary-strong); color: white; }
       .next-step h2, .next-step p { color: white; }
       .next-step h2, .next-step p { margin: 0; }
-      .next-step__label { color: var(--color-primary); font-size: .85rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+      .next-step__label { color: var(--color-primary); font-size: .85rem; font-weight: 800; text-transform: uppercase; }
       .next-step .btn { background: white; color: var(--color-primary-strong); }
       .adult-tools { display: grid; gap: 1rem; }
       .adult-tools p { margin: .35rem 0 0; }
       .tools { display: flex; flex-wrap: wrap; gap: .75rem; }
-      .tools label { cursor: pointer; }
       .tools input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       .btn-danger { border: 2px solid #b42318; background: #fff1f0; color: #8a1c13; }
       .notice { margin: 0; color: var(--color-success-strong); font-weight: 700; }
-      @media (max-width: 52rem) { .page-hero { grid-template-columns: 1fr auto; } .hero-copy { grid-column: 1 / -1; grid-row: 1; } .back-link { grid-row: 2; } .hero-action { grid-row: 2; } .summary-panel { align-items: start; flex-direction: column; } .summary-grid { width: 100%; } }
+      @media (max-width: 52rem) { .page-hero { grid-template-areas: "hero hero" "back action"; grid-template-columns: 1fr 1fr; } .hero-copy { justify-self: center; } .back-link { justify-self: start; } .hero-action { justify-self: end; } .summary-panel { align-items: start; flex-direction: column; } .summary-grid { width: 100%; } }
       @media (max-width: 42rem) { .dashboard-grid, .milestone-list { grid-template-columns: 1fr; } .summary-grid { gap: .75rem; } .summary-grid strong { font-size: 1.8rem; } .tools > * { width: 100%; } }
     `,
   ],

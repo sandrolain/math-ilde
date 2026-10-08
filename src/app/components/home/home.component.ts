@@ -164,12 +164,11 @@ interface Activity {
       }
 
       .home-hero {
-        display: grid;
-        grid-template-columns: auto 1fr;
+        display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 2rem;
         margin-bottom: 2rem;
-        text-align: center;
       }
 
       .eyebrow {
@@ -392,8 +391,7 @@ interface Activity {
         }
 
         .home-hero {
-          grid-template-columns: 1fr;
-          justify-items: center;
+          align-items: flex-start;
         }
 
         .home-mascot {
