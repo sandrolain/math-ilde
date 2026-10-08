@@ -88,6 +88,9 @@ interface RowOfElements {
             [start]="operation().operand1"
             [target]="operation().result"
             [showAnswer]="revealAnswer()"
+            [showLabels]="revealAnswer()"
+            [highlightPoints]="revealAnswer()"
+            [rangeEnd]="numberLineRange()"
           />
           @if (operation().result <= 10) {
             <app-ten-frame [filled]="operation().result" />
@@ -140,6 +143,18 @@ export class VisualRepresentationComponent {
   operation = input.required<MathOperation>();
   displayMode = input<'grouped' | 'total'>('grouped');
   revealAnswer = input(true);
+
+  numberLineEnd = computed(() => {
+    const operation = this.operation();
+    const maximum = Math.max(
+      operation.operand1,
+      operation.operand2,
+      operation.operand3 ?? 0,
+      operation.result,
+    );
+    return Math.max(10, Math.ceil(maximum / 10) * 10);
+  });
+  numberLineRange = computed(() => (this.revealAnswer() ? null : this.numberLineEnd()));
 
   private readonly availableFruits: FruitType[] = [
     'apple',

@@ -19,12 +19,14 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
         @for (point of points(); track point) {
           <span
             class="number-line__point"
-            [class.number-line__point--start]="point === start()"
-            [class.number-line__point--target]="point === target()"
+          [class.number-line__point--start]="highlightPoints() && point === start()"
+          [class.number-line__point--target]="highlightPoints() && point === target()"
           >
             <span class="number-line__dot"></span>
+          @if (showLabels()) {
             <span>{{ point }}</span>
-          </span>
+          }
+        </span>
         }
       </div>
       @if (showAnswer()) {
@@ -109,8 +111,15 @@ export class NumberLineComponent {
   start = input.required<number>();
   target = input.required<number>();
   showAnswer = input(true);
+  showLabels = input(true);
+  highlightPoints = input(true);
+  rangeEnd = input<number | null>(null);
 
   points = computed(() => {
+    const end = this.rangeEnd();
+    if (end !== null) {
+      return Array.from({ length: end + 1 }, (_, index) => index);
+    }
     const first = Math.min(this.start(), this.target());
     const last = Math.max(this.start(), this.target());
     return Array.from({ length: last - first + 1 }, (_, index) => first + index);
