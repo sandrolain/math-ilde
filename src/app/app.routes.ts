@@ -107,6 +107,10 @@ export const routes: Routes = [
       import('./pages/problems/problems.component').then((m) => m.ProblemsComponent),
   },
   {
+    path: 'ripasso',
+    loadComponent: () => import('./pages/review/review.component').then((m) => m.ReviewComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },
