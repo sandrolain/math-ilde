@@ -17,6 +17,7 @@ import { NumericKeyboardComponent } from '../../components/numeric-keyboard/nume
 import { MathExerciseService } from '../../services/math-exercise.service';
 import { OptionsStorageService } from '../../services/options-storage.service';
 import { FeedbackService } from '../../services/feedback.service';
+import { HintService } from '../../services/hint.service';
 import type {
   MathOperation,
   OperationType,
@@ -181,6 +182,7 @@ export class AdditionSubtractionComponent {
   private mathService = inject(MathExerciseService);
   private storageService = inject(OptionsStorageService);
   private feedbackService = inject(FeedbackService);
+  private hintService = inject(HintService);
 
   // Stato
   exerciseOptions = signal<ExerciseOptions>(
@@ -216,26 +218,14 @@ export class AdditionSubtractionComponent {
     } else if (this.isCorrect()) {
       return this.feedbackService.getMessage('success');
     } else if (this.shouldShowAnswer()) {
-      return this.feedbackService.getMessage('show-answer', this.currentOperation().result);
+      return 'Facciamo il primo passo insieme.';
     } else {
       return this.feedbackService.getMessage('retry');
     }
   });
 
   learningHint = computed(() => {
-    const operation = this.currentOperation();
-
-    if (operation.operator === '+') {
-      return operation.operand3 === undefined
-        ? 'Conta il primo gruppo, poi aggiungi il secondo.'
-        : 'Somma un gruppo alla volta: prima i primi due, poi il terzo.';
-    }
-
-    if (operation.operator === '-') {
-      return 'Conta tutti gli elementi, togli quelli barrati e guarda quanti ne restano.';
-    }
-
-    return 'Osserva i gruppi colorati e prova a contarli con calma.';
+    return this.hintService.getHint(this.currentOperation(), this.attemptCount());
   });
 
   achievementMessage = computed(() =>
