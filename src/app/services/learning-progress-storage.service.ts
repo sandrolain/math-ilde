@@ -79,6 +79,38 @@ export class LearningProgressStorageService {
     }
   }
 
+  exportJson(): string {
+    return JSON.stringify(this.load(), null, 2);
+  }
+
+  importJson(json: string): boolean {
+    try {
+      const parsed: unknown = JSON.parse(json);
+      if (!isLearningProgressState(parsed)) {
+        console.error('Formato progressi Math-ilde non valido: importazione rifiutata');
+        return false;
+      }
+      this.save(parsed);
+      return true;
+    } catch (error) {
+      console.error("Errore nell'importazione dei progressi Math-ilde:", error);
+      return false;
+    }
+  }
+
+  clearSkill(skillId: LearningProgressState['sessions'][number]['skillId']): void {
+    const state = this.load();
+    this.save({
+      ...state,
+      sessions: state.sessions.filter((session) => session.skillId !== skillId),
+      activeSessionId:
+        state.sessions.find((session) => session.id === state.activeSessionId)?.skillId === skillId
+          ? null
+          : state.activeSessionId,
+      updatedAt: Date.now(),
+    });
+  }
+
   clear(): void {
     try {
       localStorage.removeItem(STORAGE_KEY);

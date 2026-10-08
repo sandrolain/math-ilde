@@ -40,6 +40,7 @@ interface Activity {
             Inizia
             <span aria-hidden="true">→</span>
           </a>
+          <a routerLink="/progressi" class="progress-link">Vedi i miei traguardi →</a>
         </section>
 
         <section class="activity-section" aria-labelledby="core-title">

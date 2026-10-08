@@ -21,4 +21,10 @@ describe('LearningProgressStorageService', () => {
 
     expect(service.load().sessions).toEqual([]);
   });
+
+  it('exports state and rejects invalid imports', () => {
+    expect(JSON.parse(service.exportJson()).version).toBe(1);
+    expect(service.importJson('{invalid')).toBe(false);
+    expect(service.load().sessions).toEqual([]);
+  });
 });

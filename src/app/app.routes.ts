@@ -116,6 +116,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/review/review.component').then((m) => m.ReviewComponent),
   },
   {
+    path: 'progressi',
+    loadComponent: () => import('./pages/progress/progress.component').then((m) => m.ProgressComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },
