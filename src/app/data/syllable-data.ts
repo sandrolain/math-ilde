@@ -35,7 +35,7 @@ export const DOUBLES: readonly string[] = [
 
 export const VOWELS: readonly string[] = ['a', 'e', 'i', 'o', 'u'];
 
-export const ITALIAN_ALPHABET: readonly string[] = [
+export const ALPHABET: readonly string[] = [
   'a',
   'b',
   'c',
@@ -45,6 +45,8 @@ export const ITALIAN_ALPHABET: readonly string[] = [
   'g',
   'h',
   'i',
+  'j',
+  'k',
   'l',
   'm',
   'n',
@@ -56,6 +58,9 @@ export const ITALIAN_ALPHABET: readonly string[] = [
   't',
   'u',
   'v',
+  'w',
+  'x',
+  'y',
   'z',
 ];
 

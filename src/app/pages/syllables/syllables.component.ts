@@ -24,7 +24,7 @@ import {
   NAMES,
   THINGS,
   SENTENCES,
-  ITALIAN_ALPHABET,
+  ALPHABET,
 } from '../../data/syllable-data';
 
 function randomItem<T>(arr: readonly T[]): T {
@@ -72,7 +72,7 @@ function generateSyllable(opts: SyllableOptions): string {
         <div class="w-full max-w-3xl space-y-6">
           @if (options().activeMode === 'letter') {
             <app-letter-grid
-              [letters]="italianAlphabet"
+              [letters]="alphabet"
               [showUppercase]="options().showUppercase"
               [showLowercase]="options().showLowercase"
               [cursive]="options().letterStyle === 'cursive'"
@@ -177,7 +177,7 @@ export class SyllablesComponent implements OnInit {
   private readonly syllabificationService = inject(SyllabificationService);
   private readonly storageService = inject(SyllableOptionsStorageService);
   readonly speechService = inject(SpeechService);
-  readonly italianAlphabet = ITALIAN_ALPHABET;
+  readonly alphabet = ALPHABET;
 
   options = signal<SyllableOptions>(this.storageService.loadOptions());
   currentRawContent = signal<string | string[]>('ba');

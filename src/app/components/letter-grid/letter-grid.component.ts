@@ -8,7 +8,7 @@ import { SpeechService } from '../../services/speech.service';
     <section class="letter-panel" aria-labelledby="letter-grid-title">
       <h2 id="letter-grid-title">Le lettere</h2>
       <p class="letter-panel__hint">Premi una lettera per ascoltarla.</p>
-      <div class="letter-grid" role="group" aria-label="Alfabeto italiano">
+      <div class="letter-grid" role="group" aria-label="Alfabeto">
         @for (letter of letters(); track letter) {
           <button
             type="button"
