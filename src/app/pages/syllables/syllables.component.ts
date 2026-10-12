@@ -71,7 +71,11 @@ function generateSyllable(opts: SyllableOptions): string {
       <main class="flex-1 flex flex-col items-center justify-center gap-8 py-8">
         <div class="w-full max-w-3xl space-y-6">
           @if (options().activeMode === 'letter') {
-            <app-letter-grid [letters]="italianAlphabet" />
+            <app-letter-grid
+              [letters]="italianAlphabet"
+              [showUppercase]="options().showUppercase"
+              [showLowercase]="options().showLowercase"
+            />
           }
 
           @if (options().activeMode !== 'letter') {

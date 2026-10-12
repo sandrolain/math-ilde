@@ -135,6 +135,7 @@ const MODE_OPTIONS: ModeOption[] = [
       }
 
       <!-- Opzioni visualizzazione -->
+      @if (options().activeMode !== 'letter') {
       <div class="space-y-2">
         <fieldset>
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
@@ -181,6 +182,7 @@ const MODE_OPTIONS: ModeOption[] = [
           </div>
         </fieldset>
       </div>
+      }
     </div>
   `,
   styles: [

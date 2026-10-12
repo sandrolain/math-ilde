@@ -16,8 +16,12 @@ import { SpeechService } from '../../services/speech.service';
             (click)="pronounce(letter)"
             [attr.aria-label]="'Pronuncia la lettera ' + letter.toUpperCase()"
           >
-            <span>{{ letter.toUpperCase() }}</span>
-            <small>{{ letter }}</small>
+            @if (showUppercase()) {
+              <span>{{ letter.toUpperCase() }}</span>
+            }
+            @if (showLowercase()) {
+              <small>{{ letter }}</small>
+            }
           </button>
         }
       </div>
@@ -40,6 +44,8 @@ import { SpeechService } from '../../services/speech.service';
 })
 export class LetterGridComponent {
   letters = input.required<readonly string[]>();
+  showUppercase = input(true);
+  showLowercase = input(true);
   private readonly speechService = inject(SpeechService);
 
   pronounce(letter: string): void {
