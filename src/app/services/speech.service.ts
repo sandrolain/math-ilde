@@ -182,7 +182,17 @@ export class SpeechService {
   }
 
   private refreshVoices(): void {
-    this.voices.set(this.synthesis?.getVoices() ?? []);
+    const voices = this.synthesis?.getVoices() ?? [];
+    this.voices.set(voices);
+
+    const selectedVoice = voices.find(
+      (voice) =>
+        voice.voiceURI === this.settings().voiceName ||
+        voice.name === this.settings().voiceName,
+    );
+    if (selectedVoice && selectedVoice.voiceURI !== this.settings().voiceName) {
+      this.setSettings({ voiceName: selectedVoice.voiceURI });
+    }
   }
 
   private loadSettings(): SpeechSettings {
