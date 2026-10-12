@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 
 export interface SpeechOptions {
   rate?: number;
@@ -6,7 +6,19 @@ export interface SpeechOptions {
   volume?: number;
 }
 
+export interface SpeechSettings {
+  voiceName: string;
+  rate: number;
+  pitch: number;
+}
+
+const SPEECH_SETTINGS_KEY = 'math-ilde-speech-settings';
 const SYLLABLE_PAUSE_MS = 750;
+const DEFAULT_SPEECH_SETTINGS: SpeechSettings = {
+  voiceName: '',
+  rate: 0.85,
+  pitch: 1,
+};
 
 @Injectable({ providedIn: 'root' })
 export class SpeechService {
@@ -14,6 +26,11 @@ export class SpeechService {
   readonly activeText = signal<string | null>(null);
   readonly activeSyllableIndex = signal<number | null>(null);
   readonly isSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+  readonly settings = signal<SpeechSettings>(this.loadSettings());
+  readonly voices = signal<SpeechSynthesisVoice[]>([]);
+  readonly italianVoices = computed(() =>
+    this.voices().filter((voice) => voice.lang.toLowerCase().startsWith('it')),
+  );
 
   private readonly synthesis =
     typeof window !== 'undefined' && 'speechSynthesis' in window
@@ -23,6 +40,23 @@ export class SpeechService {
   private syllableIndex = 0;
   private syllablePauseTimer: ReturnType<typeof setTimeout> | null = null;
   private speechRun = 0;
+
+  constructor() {
+    this.refreshVoices();
+    if (typeof window !== 'undefined' && this.synthesis) {
+      window.speechSynthesis.addEventListener('voiceschanged', () => this.refreshVoices());
+    }
+  }
+
+  setSettings(changes: Partial<SpeechSettings>): void {
+    const settings = { ...this.settings(), ...changes };
+    this.settings.set(settings);
+    localStorage.setItem(SPEECH_SETTINGS_KEY, JSON.stringify(settings));
+  }
+
+  testVoice(): void {
+    this.speak('Ciao! Questa è la mia voce.', { rate: this.settings().rate });
+  }
 
   speak(text: string, options: SpeechOptions = {}): void {
     const normalizedText = text.trim();
@@ -35,8 +69,9 @@ export class SpeechService {
 
     const utterance = new SpeechSynthesisUtterance(normalizedText);
     utterance.lang = 'it-IT';
-    utterance.rate = options.rate ?? 0.85;
-    utterance.pitch = options.pitch ?? 1;
+    utterance.voice = this.voices().find((voice) => voice.name === this.settings().voiceName) ?? null;
+    utterance.rate = options.rate ?? this.settings().rate;
+    utterance.pitch = options.pitch ?? this.settings().pitch;
     utterance.volume = options.volume ?? 1;
     utterance.onstart = () => {
       if (run === this.speechRun) {
@@ -106,7 +141,9 @@ export class SpeechService {
     this.activeSyllableIndex.set(this.syllableIndex);
     const utterance = new SpeechSynthesisUtterance(syllable);
     utterance.lang = 'it-IT';
-    utterance.rate = 0.65;
+    utterance.voice = this.voices().find((voice) => voice.name === this.settings().voiceName) ?? null;
+    utterance.rate = this.settings().rate;
+    utterance.pitch = this.settings().pitch;
     utterance.onend = () => {
       if (run !== this.speechRun) {
         return;
@@ -132,5 +169,31 @@ export class SpeechService {
     };
 
     this.synthesis.speak(utterance);
+  }
+
+  private refreshVoices(): void {
+    this.voices.set(this.synthesis?.getVoices() ?? []);
+  }
+
+  private loadSettings(): SpeechSettings {
+    try {
+      const stored = localStorage.getItem(SPEECH_SETTINGS_KEY);
+      if (stored) {
+        const parsed: unknown = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object') {
+          const candidate = parsed as Partial<SpeechSettings>;
+          if (
+            typeof candidate.voiceName === 'string' &&
+            typeof candidate.rate === 'number' &&
+            typeof candidate.pitch === 'number'
+          ) {
+            return { ...DEFAULT_SPEECH_SETTINGS, ...candidate };
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Errore nel caricamento delle impostazioni vocali:', error);
+    }
+    return DEFAULT_SPEECH_SETTINGS;
   }
 }

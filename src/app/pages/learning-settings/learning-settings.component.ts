@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { LearningPreferencesService } from '../../services/learning-preferences.service';
 import { LearningProgressStorageService } from '../../services/learning-progress-storage.service';
+import { SpeechService } from '../../services/speech.service';
 import type { LearningSkillId } from '../../types/learning.types';
 
 const SKILL_LABELS: Partial<Record<LearningSkillId, string>> = {
@@ -34,6 +35,41 @@ const SKILL_LABELS: Partial<Record<LearningSkillId, string>> = {
           <span><strong>Audio</strong><small>Attiva suoni e feedback audio quando presenti.</small></span>
           <input type="checkbox" [checked]="preferences().soundEnabled" (change)="setSound($event)" />
         </label>
+      </section>
+
+      <section class="settings-card" aria-labelledby="speech-title">
+        <h2 id="speech-title">Voce di lettura</h2>
+        @if (speechService.isSupported) {
+          @if (speechService.italianVoices().length > 0) {
+            <label class="field-label" for="speech-voice">Voce</label>
+            <select
+              id="speech-voice"
+              class="speech-select"
+              [value]="speechService.settings().voiceName"
+              (change)="setVoice($event)"
+            >
+              <option value="">Predefinita del dispositivo</option>
+              @for (voice of speechService.italianVoices(); track voice.name) {
+                <option [value]="voice.name">{{ voice.name }}</option>
+              }
+            </select>
+          } @else {
+            <p class="muted">Il dispositivo non espone voci italiane aggiuntive.</p>
+          }
+          <label class="range-row" for="speech-rate">
+            <span><strong>Velocità</strong><output>{{ speechService.settings().rate.toFixed(2) }}</output></span>
+            <input id="speech-rate" type="range" min="0.5" max="1.5" step="0.05" [value]="speechService.settings().rate" (input)="setRate($event)" />
+          </label>
+          <label class="range-row" for="speech-pitch">
+            <span><strong>Tono</strong><output>{{ speechService.settings().pitch.toFixed(2) }}</output></span>
+            <input id="speech-pitch" type="range" min="0.5" max="1.5" step="0.05" [value]="speechService.settings().pitch" (input)="setPitch($event)" />
+          </label>
+          <button type="button" class="btn btn-secondary btn-sm" (click)="speechService.testVoice()">
+            🔊 Prova voce
+          </button>
+        } @else {
+          <p class="muted">La lettura vocale non è disponibile su questo dispositivo.</p>
+        }
       </section>
 
       <section class="settings-card" aria-labelledby="skills-title">
@@ -71,6 +107,11 @@ const SKILL_LABELS: Partial<Record<LearningSkillId, string>> = {
       .setting-row + .setting-row, .skill-list li + li { border-top: 1px solid var(--color-border); }
       .setting-row span { display: grid; gap: .25rem; }
       input[type='checkbox'] { width: 1.5rem; height: 1.5rem; accent-color: var(--color-action); }
+      .field-label { display: block; margin-bottom: .4rem; color: var(--color-text-primary); font-weight: 700; }
+      .speech-select { width: 100%; min-height: 2.75rem; padding: .5rem .7rem; border: 2px solid var(--color-border); border-radius: .6rem; background: white; color: var(--color-text-primary); }
+      .range-row { display: grid; gap: .4rem; margin-top: 1rem; color: var(--color-text-primary); }
+      .range-row span { display: flex; justify-content: space-between; }
+      .range-row input { accent-color: var(--color-action); }
       .skill-list { margin: 0; padding: 0; list-style: none; }
       .skill-list li span { color: var(--color-text-primary); font-weight: 700; }
       .notice { color: var(--color-success-strong); font-weight: 700; }
@@ -80,6 +121,7 @@ const SKILL_LABELS: Partial<Record<LearningSkillId, string>> = {
 export class LearningSettingsComponent {
   private readonly preferencesService = inject(LearningPreferencesService);
   private readonly storage = inject(LearningProgressStorageService);
+  readonly speechService = inject(SpeechService);
   readonly preferences = this.preferencesService.preferences;
   readonly notice = signal('');
   readonly skills = computed(() => {
@@ -93,6 +135,18 @@ export class LearningSettingsComponent {
 
   setSound(event: Event): void {
     this.preferencesService.update({ soundEnabled: (event.target as HTMLInputElement).checked });
+  }
+
+  setVoice(event: Event): void {
+    this.speechService.setSettings({ voiceName: (event.target as HTMLSelectElement).value });
+  }
+
+  setRate(event: Event): void {
+    this.speechService.setSettings({ rate: Number((event.target as HTMLInputElement).value) });
+  }
+
+  setPitch(event: Event): void {
+    this.speechService.setSettings({ pitch: Number((event.target as HTMLInputElement).value) });
   }
 
   resetSkill(skillId: LearningSkillId): void {
