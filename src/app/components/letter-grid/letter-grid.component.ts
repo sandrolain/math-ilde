@@ -42,7 +42,7 @@ import { SpeechService } from '../../services/speech.service';
       .letter-button--active { border-color: var(--color-success-strong); background: var(--color-success-surface); box-shadow: 0 0 0 .35rem rgb(132 204 22 / 25%); transform: translateY(-.2rem) scale(1.04); }
       .letter-button:focus-visible { outline: 3px solid var(--color-action); outline-offset: 3px; }
       .letter-button span { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 800; line-height: 1; }
-      .letter-button small { color: var(--color-text-secondary); font-size: 1rem; }
+      .letter-button small { color: var(--color-text-secondary); font-size: clamp(1.15rem, 3vw, 1.4rem); }
     `,
   ],
 })
