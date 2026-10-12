@@ -144,6 +144,7 @@ export class VisualRepresentationComponent {
   displayMode = input<'grouped' | 'total'>('grouped');
   revealAnswer = input(true);
   showTenFrame = input(true);
+  private readonly additiveModelsVisible = false;
 
   numberLineEnd = computed(() => {
     const operation = this.operation();
@@ -217,7 +218,11 @@ export class VisualRepresentationComponent {
 
   showsAdditiveModels = computed(() => {
     const op = this.operation();
-    return (op.operator === '+' || op.operator === '-') && this.getTotalElements() <= 20;
+    return (
+      this.additiveModelsVisible &&
+      (op.operator === '+' || op.operator === '-') &&
+      this.getTotalElements() <= 20
+    );
   });
 
   showsArrayModel = computed(() => {

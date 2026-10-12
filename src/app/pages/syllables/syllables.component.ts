@@ -11,6 +11,7 @@ import { SyllableOptionsStorageService } from '../../services/syllable-options-s
 import { SpeechService } from '../../services/speech.service';
 import { SyllableDisplayComponent } from '../../components/syllable-display/syllable-display.component';
 import { SyllableOptionsControlComponent } from '../../components/syllable-options-control/syllable-options-control.component';
+import { LetterGridComponent } from '../../components/letter-grid/letter-grid.component';
 import { HeaderComponent } from '../../components/header/header.component';
 import type { SyllableOptions } from '../../types/exercise.types';
 import {
@@ -23,6 +24,7 @@ import {
   NAMES,
   THINGS,
   SENTENCES,
+  ITALIAN_ALPHABET,
 } from '../../data/syllable-data';
 
 function randomItem<T>(arr: readonly T[]): T {
@@ -52,7 +54,7 @@ function generateSyllable(opts: SyllableOptions): string {
 @Component({
   selector: 'app-syllables',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HeaderComponent, SyllableDisplayComponent, SyllableOptionsControlComponent],
+  imports: [HeaderComponent, SyllableDisplayComponent, SyllableOptionsControlComponent, LetterGridComponent],
   host: {
     class: 'block',
     '(window:keydown.Space)': 'onSpaceKey($event)',
@@ -68,6 +70,11 @@ function generateSyllable(opts: SyllableOptions): string {
 
       <main class="flex-1 flex flex-col items-center justify-center gap-8 py-8">
         <div class="w-full max-w-3xl space-y-6">
+          @if (options().activeMode === 'letter') {
+            <app-letter-grid [letters]="italianAlphabet" />
+          }
+
+          @if (options().activeMode !== 'letter') {
           @if (displayUppercase()) {
             <section aria-label="Testo in maiuscolo">
               <app-syllable-display
@@ -104,9 +111,10 @@ function generateSyllable(opts: SyllableOptions): string {
               />
             </section>
           }
+          }
         </div>
 
-        @if (speechService.isSupported) {
+        @if (options().activeMode !== 'letter' && speechService.isSupported) {
           <div class="flex flex-wrap justify-center gap-3" aria-label="Comandi vocali">
             <button
               class="btn btn-secondary min-h-12 min-w-40 text-lg"
@@ -140,20 +148,22 @@ function generateSyllable(opts: SyllableOptions): string {
               </button>
             }
           </div>
-        } @else {
+        } @else if (options().activeMode !== 'letter') {
           <p class="text-center text-sm text-slate-600" role="status">
             La lettura vocale non è disponibile su questo dispositivo.
           </p>
         }
 
-        <button
+        @if (options().activeMode !== 'letter') {
+          <button
           class="btn btn-primary btn-large mt-4 min-w-45 min-h-14 text-xl"
           (click)="generateNext()"
           aria-label="Mostra prossima sillaba o parola"
         >
           <span aria-hidden="true">🔄</span>
           Prossimo
-        </button>
+          </button>
+        }
       </main>
     </div>
   `,
@@ -162,6 +172,7 @@ export class SyllablesComponent implements OnInit {
   private readonly syllabificationService = inject(SyllabificationService);
   private readonly storageService = inject(SyllableOptionsStorageService);
   readonly speechService = inject(SpeechService);
+  readonly italianAlphabet = ITALIAN_ALPHABET;
 
   options = signal<SyllableOptions>(this.storageService.loadOptions());
   currentRawContent = signal<string | string[]>('ba');
@@ -219,6 +230,9 @@ export class SyllablesComponent implements OnInit {
     switch (opts.activeMode) {
       case 'syllable':
         this.currentRawContent.set(generateSyllable(opts));
+        break;
+      case 'letter':
+        this.currentRawContent.set('');
         break;
       case 'color':
         this.currentRawContent.set(randomItem(COLORS));

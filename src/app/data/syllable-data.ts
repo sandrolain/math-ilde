@@ -35,6 +35,30 @@ export const DOUBLES: readonly string[] = [
 
 export const VOWELS: readonly string[] = ['a', 'e', 'i', 'o', 'u'];
 
+export const ITALIAN_ALPHABET: readonly string[] = [
+  'a',
+  'b',
+  'c',
+  'd',
+  'e',
+  'f',
+  'g',
+  'h',
+  'i',
+  'l',
+  'm',
+  'n',
+  'o',
+  'p',
+  'q',
+  'r',
+  's',
+  't',
+  'u',
+  'v',
+  'z',
+];
+
 export const COLORS: readonly string[] = [
   'rosso',
   'arancione',

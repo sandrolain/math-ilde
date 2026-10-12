@@ -9,6 +9,7 @@ interface ModeOption {
 
 const MODE_OPTIONS: ModeOption[] = [
   { icon: '🔤', label: 'Sillabe', value: 'syllable' },
+  { icon: '🔠', label: 'Lettere', value: 'letter' },
   { icon: '🎨', label: 'Colori', value: 'color' },
   { icon: '🔢', label: 'Numeri', value: 'number' },
   { icon: '🐾', label: 'Animali', value: 'animal' },
