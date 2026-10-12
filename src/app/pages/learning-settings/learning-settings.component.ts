@@ -49,8 +49,8 @@ const SKILL_LABELS: Partial<Record<LearningSkillId, string>> = {
               (change)="setVoice($event)"
             >
               <option value="">Predefinita del dispositivo</option>
-              @for (voice of speechService.italianVoices(); track voice.name) {
-                <option [value]="voice.name">{{ voice.name }}</option>
+              @for (voice of speechService.italianVoices(); track voice.voiceURI) {
+                <option [value]="voice.voiceURI">{{ voice.name }}</option>
               }
             </select>
           } @else {
@@ -67,6 +67,10 @@ const SKILL_LABELS: Partial<Record<LearningSkillId, string>> = {
           <button type="button" class="btn btn-secondary btn-sm" (click)="speechService.testVoice()">
             🔊 Prova voce
           </button>
+          <p class="muted" role="status">Le modifiche vengono salvate automaticamente su questo dispositivo.</p>
+          @if (speechNotice()) {
+            <p class="notice" role="status">{{ speechNotice() }}</p>
+          }
         } @else {
           <p class="muted">La lettura vocale non è disponibile su questo dispositivo.</p>
         }
@@ -122,6 +126,7 @@ export class LearningSettingsComponent {
   private readonly preferencesService = inject(LearningPreferencesService);
   private readonly storage = inject(LearningProgressStorageService);
   readonly speechService = inject(SpeechService);
+  readonly speechNotice = signal('');
   readonly preferences = this.preferencesService.preferences;
   readonly notice = signal('');
   readonly skills = computed(() => {
@@ -139,14 +144,17 @@ export class LearningSettingsComponent {
 
   setVoice(event: Event): void {
     this.speechService.setSettings({ voiceName: (event.target as HTMLSelectElement).value });
+    this.speechNotice.set('Voce salvata.');
   }
 
   setRate(event: Event): void {
     this.speechService.setSettings({ rate: Number((event.target as HTMLInputElement).value) });
+    this.speechNotice.set('Velocità salvata.');
   }
 
   setPitch(event: Event): void {
     this.speechService.setSettings({ pitch: Number((event.target as HTMLInputElement).value) });
+    this.speechNotice.set('Tono salvato.');
   }
 
   resetSkill(skillId: LearningSkillId): void {

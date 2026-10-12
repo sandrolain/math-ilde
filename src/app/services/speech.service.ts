@@ -69,7 +69,12 @@ export class SpeechService {
 
     const utterance = new SpeechSynthesisUtterance(normalizedText);
     utterance.lang = 'it-IT';
-    utterance.voice = this.voices().find((voice) => voice.name === this.settings().voiceName) ?? null;
+    utterance.voice =
+      this.voices().find(
+        (voice) =>
+          voice.voiceURI === this.settings().voiceName ||
+          voice.name === this.settings().voiceName,
+      ) ?? null;
     utterance.rate = options.rate ?? this.settings().rate;
     utterance.pitch = options.pitch ?? this.settings().pitch;
     utterance.volume = options.volume ?? 1;
@@ -141,7 +146,12 @@ export class SpeechService {
     this.activeSyllableIndex.set(this.syllableIndex);
     const utterance = new SpeechSynthesisUtterance(syllable);
     utterance.lang = 'it-IT';
-    utterance.voice = this.voices().find((voice) => voice.name === this.settings().voiceName) ?? null;
+    utterance.voice =
+      this.voices().find(
+        (voice) =>
+          voice.voiceURI === this.settings().voiceName ||
+          voice.name === this.settings().voiceName,
+      ) ?? null;
     utterance.rate = this.settings().rate;
     utterance.pitch = this.settings().pitch;
     utterance.onend = () => {
