@@ -75,6 +75,7 @@ function generateSyllable(opts: SyllableOptions): string {
               [letters]="italianAlphabet"
               [showUppercase]="options().showUppercase"
               [showLowercase]="options().showLowercase"
+              [cursive]="options().letterStyle === 'cursive'"
             />
           }
 

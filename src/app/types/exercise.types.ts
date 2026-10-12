@@ -246,6 +246,7 @@ export type SyllableMode =
   | 'name'
   | 'things'
   | 'sentence';
+export type LetterStyle = 'print' | 'cursive';
 
 export interface SyllableOptions {
   section: 'syllables';
@@ -255,6 +256,7 @@ export interface SyllableOptions {
   showUppercase: boolean;
   showLowercase: boolean;
   showCursive: boolean;
+  letterStyle: LetterStyle;
   activeMode: SyllableMode;
 }
 export type FeedbackType = 'success' | 'retry' | 'show-answer';

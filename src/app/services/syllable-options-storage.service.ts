@@ -11,6 +11,7 @@ const DEFAULT_OPTIONS: SyllableOptions = {
   showUppercase: false,
   showLowercase: true,
   showCursive: false,
+  letterStyle: 'print',
   activeMode: 'syllable',
 };
 

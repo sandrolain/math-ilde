@@ -183,6 +183,34 @@ const MODE_OPTIONS: ModeOption[] = [
         </fieldset>
       </div>
       }
+
+      @if (options().activeMode === 'letter') {
+        <fieldset class="space-y-2">
+          <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
+            Stile delle lettere:
+          </legend>
+          <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11">
+            <input
+              type="radio"
+              name="letter-style"
+              class="w-5 h-5 accent-(--color-primary)"
+              [checked]="options().letterStyle === 'print'"
+              (change)="setLetterStyle('print')"
+            />
+            <span class="text-sm text-(--color-text-primary)">Stampatello</span>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11">
+            <input
+              type="radio"
+              name="letter-style"
+              class="w-5 h-5 accent-(--color-primary)"
+              [checked]="options().letterStyle === 'cursive'"
+              (change)="setLetterStyle('cursive')"
+            />
+            <span class="text-sm text-(--color-text-primary)">Corsivo</span>
+          </label>
+        </fieldset>
+      }
     </div>
   `,
   styles: [
@@ -222,6 +250,10 @@ export class SyllableOptionsControlComponent {
 
   toggleUseDoubles(): void {
     this.emit({ useDoubles: !this.options().useDoubles });
+  }
+
+  setLetterStyle(letterStyle: 'print' | 'cursive'): void {
+    this.emit({ letterStyle });
   }
 
   toggleShowUppercase(): void {

@@ -11,6 +11,7 @@ const SYLLABLE_PAUSE_MS = 750;
 @Injectable({ providedIn: 'root' })
 export class SpeechService {
   readonly isSpeaking = signal(false);
+  readonly activeText = signal<string | null>(null);
   readonly activeSyllableIndex = signal<number | null>(null);
   readonly isSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
@@ -40,17 +41,20 @@ export class SpeechService {
     utterance.onstart = () => {
       if (run === this.speechRun) {
         this.isSpeaking.set(true);
+        this.activeText.set(normalizedText);
       }
     };
     utterance.onend = () => {
       if (run === this.speechRun) {
         this.isSpeaking.set(false);
+        this.activeText.set(null);
         this.activeSyllableIndex.set(null);
       }
     };
     utterance.onerror = () => {
       if (run === this.speechRun) {
         this.isSpeaking.set(false);
+        this.activeText.set(null);
         this.activeSyllableIndex.set(null);
       }
     };
@@ -83,6 +87,7 @@ export class SpeechService {
     this.syllableQueue = [];
     this.syllableIndex = 0;
     this.activeSyllableIndex.set(null);
+    this.activeText.set(null);
     this.isSpeaking.set(false);
   }
 
