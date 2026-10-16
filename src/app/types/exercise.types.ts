@@ -1,12 +1,9 @@
 // Math-ilde Type Definitions
 
+import type { Style as HandwritingStyle } from '../calligrafo/types';
+
 export type OperationType =
-  | 'addition'
-  | 'subtraction'
-  | 'multiplication'
-  | 'division'
-  | 'mixed'
-  | 'decomposition';
+  'addition' | 'subtraction' | 'multiplication' | 'division' | 'mixed' | 'decomposition';
 export type OperatorSymbol = '+' | '-' | '×' | '÷';
 export type DifficultyLevel = 10 | 50 | 100 | 1000;
 export type NumberOfOperands = 2 | 3;
@@ -29,11 +26,7 @@ export type SectionType =
 
 export type MemoryCardVariant = 'operation' | 'result';
 export type MemoryOperationType =
-  | 'addition'
-  | 'subtraction'
-  | 'multiplication'
-  | 'division'
-  | 'mixed';
+  'addition' | 'subtraction' | 'multiplication' | 'division' | 'mixed';
 export type MemoryGridSize = '4x3' | '4x4';
 
 export interface MemoryOptions {
@@ -65,14 +58,7 @@ export interface MemoryGameState {
 
 export type GeometryMode = 'recognize' | 'count-sides' | 'find-all';
 export type GeometryShapeId =
-  | 'circle'
-  | 'triangle'
-  | 'square'
-  | 'rectangle'
-  | 'rhombus'
-  | 'pentagon'
-  | 'hexagon'
-  | 'octagon';
+  'circle' | 'triangle' | 'square' | 'rectangle' | 'rhombus' | 'pentagon' | 'hexagon' | 'octagon';
 
 export interface GeometryOptions {
   section: 'geometry';
@@ -240,6 +226,7 @@ export interface TimesTableExercise {
 export type SyllableMode =
   | 'syllable'
   | 'letter'
+  | 'handwriting'
   | 'color'
   | 'number'
   | 'animal'
@@ -247,6 +234,7 @@ export type SyllableMode =
   | 'things'
   | 'sentence';
 export type LetterStyle = 'print' | 'cursive';
+export type LetterFilter = 'all' | 'vowels' | 'consonants';
 
 export interface SyllableOptions {
   section: 'syllables';
@@ -257,6 +245,9 @@ export interface SyllableOptions {
   showLowercase: boolean;
   showCursive: boolean;
   letterStyle: LetterStyle;
+  letterFilter: LetterFilter;
+  /** Stile usato dalla modalità "Scrivi" (Calligrafo). */
+  handwritingStyle: HandwritingStyle;
   activeMode: SyllableMode;
 }
 export type FeedbackType = 'success' | 'retry' | 'show-answer';
@@ -284,10 +275,7 @@ export interface MathOperation {
 }
 
 export type MathSectionType =
-  | 'addition-subtraction'
-  | 'multiplication'
-  | 'division'
-  | 'decomposition';
+  'addition-subtraction' | 'multiplication' | 'division' | 'decomposition';
 
 export interface ExerciseOptions {
   section: MathSectionType;

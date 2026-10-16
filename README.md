@@ -13,6 +13,9 @@ Math-ilde è una webapp Angular interattiva progettata per aiutare gli studenti 
 - **Divisioni**: Divisioni senza resto con feedback immediato
 - **3 livelli di difficoltà**: Facile, intermedio, difficile
 - **Modalità mista**: Combina addizioni e sottrazioni casualmente
+- **Scrittura a mano** (Sillabe → ✍️ Scrivi): verifica la lettera scritta a mano con
+  modelli per stampatello/corsivo, maiuscolo/minuscolo; feedback su forma,
+  dimensione, posizione e ordine/verso dei tratti, con stelline e messaggi in italiano
 
 ### 🎨 Interfaccia child-friendly
 

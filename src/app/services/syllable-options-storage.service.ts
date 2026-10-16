@@ -12,6 +12,8 @@ const DEFAULT_OPTIONS: SyllableOptions = {
   showLowercase: true,
   showCursive: false,
   letterStyle: 'print',
+  letterFilter: 'all',
+  handwritingStyle: 'stampatello-maiuscolo',
   activeMode: 'syllable',
 };
 

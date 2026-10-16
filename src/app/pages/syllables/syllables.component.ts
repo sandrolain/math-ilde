@@ -13,6 +13,7 @@ import { SyllableDisplayComponent } from '../../components/syllable-display/syll
 import { SyllableOptionsControlComponent } from '../../components/syllable-options-control/syllable-options-control.component';
 import { LetterGridComponent } from '../../components/letter-grid/letter-grid.component';
 import { HeaderComponent } from '../../components/header/header.component';
+import { HandwritingCanvasComponent } from '../../components/handwriting-canvas/handwriting-canvas.component';
 import type { SyllableOptions } from '../../types/exercise.types';
 import {
   CONSONANTS,
@@ -54,7 +55,13 @@ function generateSyllable(opts: SyllableOptions): string {
 @Component({
   selector: 'app-syllables',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HeaderComponent, SyllableDisplayComponent, SyllableOptionsControlComponent, LetterGridComponent],
+  imports: [
+    HeaderComponent,
+    SyllableDisplayComponent,
+    SyllableOptionsControlComponent,
+    LetterGridComponent,
+    HandwritingCanvasComponent,
+  ],
   host: {
     class: 'block',
     '(window:keydown.Space)': 'onSpaceKey($event)',
@@ -72,60 +79,100 @@ function generateSyllable(opts: SyllableOptions): string {
         <div class="w-full max-w-3xl space-y-6">
           @if (options().activeMode === 'letter') {
             <app-letter-grid
-              [letters]="alphabet"
+              [letters]="displayedLetters()"
               [showUppercase]="options().showUppercase"
               [showLowercase]="options().showLowercase"
               [cursive]="options().letterStyle === 'cursive'"
             />
           }
 
-          @if (options().activeMode !== 'letter') {
-          @if (displayUppercase()) {
-            <section aria-label="Testo in maiuscolo">
-              <app-syllable-display
-                [content]="syllabifiedContent()"
-                displayCase="upper"
-                [isSentence]="options().activeMode === 'sentence'"
-                [speechActive]="speechService.isSpeaking()"
-                [activeSyllableIndex]="speechService.activeSyllableIndex()"
+          @if (options().activeMode === 'handwriting') {
+            <div class="flex flex-col items-center gap-4">
+              <div class="flex flex-wrap justify-center gap-3" aria-label="Comandi scrittura">
+                <button
+                  class="btn btn-primary min-h-12 text-lg"
+                  type="button"
+                  (click)="generateNext()"
+                  aria-label="Mostra una nuova lettera da scrivere"
+                >
+                  <span aria-hidden="true">🔄</span>
+                  Nuova lettera
+                </button>
+                @if (speechService.isSupported) {
+                  <button
+                    class="btn btn-secondary min-h-12 text-lg"
+                    type="button"
+                    (click)="speakCurrentLetter()"
+                    [attr.aria-label]="
+                      speechService.isSpeaking() ? 'Lettura in corso' : 'Ascolta la lettera'
+                    "
+                  >
+                    <span aria-hidden="true">🔊</span>
+                    {{ speechService.isSpeaking() ? 'In ascolto...' : 'Ascolta' }}
+                  </button>
+                }
+              </div>
+              <app-handwriting-canvas
+                [target]="currentLetter()"
+                [writingStyle]="options().handwritingStyle"
+                [clearToken]="handwritingClear()"
               />
-            </section>
+            </div>
           }
 
-          @if (options().showLowercase) {
-            <section aria-label="Testo in minuscolo">
-              <app-syllable-display
-                [content]="syllabifiedContent()"
-                displayCase="lower"
-                [isSentence]="options().activeMode === 'sentence'"
-                [speechActive]="speechService.isSpeaking()"
-                [activeSyllableIndex]="speechService.activeSyllableIndex()"
-              />
-            </section>
-          }
+          @if (options().activeMode !== 'letter' && options().activeMode !== 'handwriting') {
+            @if (displayUppercase()) {
+              <section aria-label="Testo in maiuscolo">
+                <app-syllable-display
+                  [content]="syllabifiedContent()"
+                  displayCase="upper"
+                  [isSentence]="options().activeMode === 'sentence'"
+                  [speechActive]="speechService.isSpeaking()"
+                  [activeSyllableIndex]="speechService.activeSyllableIndex()"
+                />
+              </section>
+            }
 
-          @if (options().showCursive) {
-            <section aria-label="Testo in corsivo">
-              <app-syllable-display
-                [content]="syllabifiedContent()"
-                displayCase="sentence"
-                [cursive]="true"
-                [isSentence]="options().activeMode === 'sentence'"
-                [speechActive]="speechService.isSpeaking()"
-                [activeSyllableIndex]="speechService.activeSyllableIndex()"
-              />
-            </section>
-          }
+            @if (options().showLowercase) {
+              <section aria-label="Testo in minuscolo">
+                <app-syllable-display
+                  [content]="syllabifiedContent()"
+                  displayCase="lower"
+                  [isSentence]="options().activeMode === 'sentence'"
+                  [speechActive]="speechService.isSpeaking()"
+                  [activeSyllableIndex]="speechService.activeSyllableIndex()"
+                />
+              </section>
+            }
+
+            @if (options().showCursive) {
+              <section aria-label="Testo in corsivo">
+                <app-syllable-display
+                  [content]="syllabifiedContent()"
+                  displayCase="sentence"
+                  [cursive]="true"
+                  [isSentence]="options().activeMode === 'sentence'"
+                  [speechActive]="speechService.isSpeaking()"
+                  [activeSyllableIndex]="speechService.activeSyllableIndex()"
+                />
+              </section>
+            }
           }
         </div>
 
-        @if (options().activeMode !== 'letter' && speechService.isSupported) {
+        @if (
+          options().activeMode !== 'letter' &&
+          options().activeMode !== 'handwriting' &&
+          speechService.isSupported
+        ) {
           <div class="flex flex-wrap justify-center gap-3" aria-label="Comandi vocali">
             <button
               class="btn btn-secondary min-h-12 min-w-40 text-lg"
               type="button"
               (click)="speakContent()"
-              [attr.aria-label]="speechService.isSpeaking() ? 'Lettura in corso' : 'Ascolta parola o frase'"
+              [attr.aria-label]="
+                speechService.isSpeaking() ? 'Lettura in corso' : 'Ascolta parola o frase'
+              "
             >
               <span aria-hidden="true">🔊</span>
               {{ speechService.isSpeaking() ? 'In ascolto...' : 'Ascolta' }}
@@ -153,20 +200,20 @@ function generateSyllable(opts: SyllableOptions): string {
               </button>
             }
           </div>
-        } @else if (options().activeMode !== 'letter') {
+        } @else if (options().activeMode !== 'letter' && options().activeMode !== 'handwriting') {
           <p class="text-center text-sm text-slate-600" role="status">
             La lettura vocale non è disponibile su questo dispositivo.
           </p>
         }
 
-        @if (options().activeMode !== 'letter') {
+        @if (options().activeMode !== 'letter' && options().activeMode !== 'handwriting') {
           <button
-          class="btn btn-primary btn-large mt-4 min-w-45 min-h-14 text-xl"
-          (click)="generateNext()"
-          aria-label="Mostra prossima sillaba o parola"
-        >
-          <span aria-hidden="true">🔄</span>
-          Prossimo
+            class="btn btn-primary btn-large mt-4 min-w-45 min-h-14 text-xl"
+            (click)="generateNext()"
+            aria-label="Mostra prossima sillaba o parola"
+          >
+            <span aria-hidden="true">🔄</span>
+            Prossimo
           </button>
         }
       </main>
@@ -181,6 +228,18 @@ export class SyllablesComponent implements OnInit {
 
   options = signal<SyllableOptions>(this.storageService.loadOptions());
   currentRawContent = signal<string | string[]>('ba');
+  /** Incrementato a ogni "Nuova lettera" per azzerare l'area di scrittura. */
+  handwritingClear = signal(0);
+  currentLetter = computed<string>(() => {
+    const content = this.currentRawContent();
+    return typeof content === 'string' ? content : 'a';
+  });
+  displayedLetters = computed(() => {
+    const filter = this.options().letterFilter;
+    if (filter === 'vowels') return this.alphabet.filter((letter) => 'aeiou'.includes(letter));
+    if (filter === 'consonants') return this.alphabet.filter((letter) => !'aeiou'.includes(letter));
+    return this.alphabet;
+  });
 
   syllabifiedContent = computed<string[][]>(() => {
     const raw = this.currentRawContent();
@@ -213,6 +272,14 @@ export class SyllablesComponent implements OnInit {
     this.speechService.speak(text);
   }
 
+  speakCurrentLetter(): void {
+    if (this.speechService.isSpeaking()) {
+      this.speechService.stop();
+      return;
+    }
+    this.speechService.speak(this.currentLetter(), { rate: 0.65 });
+  }
+
   speakSyllables(): void {
     this.speechService.speakSyllables(this.syllabifiedContent());
   }
@@ -239,6 +306,20 @@ export class SyllablesComponent implements OnInit {
       case 'letter':
         this.currentRawContent.set('');
         break;
+      case 'handwriting': {
+        const letters =
+          opts.letterFilter === 'vowels'
+            ? this.alphabet.filter((letter) => 'aeiou'.includes(letter))
+            : opts.letterFilter === 'consonants'
+              ? this.alphabet.filter((letter) => !'aeiou'.includes(letter))
+              : this.alphabet;
+        const letter = randomItem(letters);
+        this.currentRawContent.set(letter);
+        // Azzera sempre l'area di scrittura (lettera scritta e modello mostrato),
+        // anche quando esce la stessa lettera.
+        this.handwritingClear.update((value) => value + 1);
+        break;
+      }
       case 'color':
         this.currentRawContent.set(randomItem(COLORS));
         break;
@@ -264,8 +345,9 @@ export class SyllablesComponent implements OnInit {
     const prevMode = this.options().activeMode;
     this.options.set(newOptions);
     this.storageService.saveOptions(newOptions);
-    // Genera nuovo contenuto se cambia la modalità
-    if (newOptions.activeMode !== prevMode) {
+    // In modalità scrittura ogni modifica alle impostazioni laterali azzera
+    // l'esercizio: nuova lettera e area di scrittura pulita.
+    if (newOptions.activeMode !== prevMode || newOptions.activeMode === 'handwriting') {
       this.generateNext();
     }
   }

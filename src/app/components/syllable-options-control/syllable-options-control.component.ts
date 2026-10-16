@@ -1,5 +1,6 @@
 import { Component, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
-import type { SyllableOptions, SyllableMode } from '../../types/exercise.types';
+import type { LetterFilter, SyllableOptions, SyllableMode } from '../../types/exercise.types';
+import { ITALIAN_STYLE_LABELS, STYLES, type Style } from '../../calligrafo';
 
 interface ModeOption {
   icon: string;
@@ -10,6 +11,7 @@ interface ModeOption {
 const MODE_OPTIONS: ModeOption[] = [
   { icon: '🔤', label: 'Sillabe', value: 'syllable' },
   { icon: '🔠', label: 'Lettere', value: 'letter' },
+  { icon: '✍️', label: 'Scrivi', value: 'handwriting' },
   { icon: '🎨', label: 'Colori', value: 'color' },
   { icon: '🔢', label: 'Numeri', value: 'number' },
   { icon: '🐾', label: 'Animali', value: 'animal' },
@@ -134,54 +136,100 @@ const MODE_OPTIONS: ModeOption[] = [
         </div>
       }
 
-      <!-- Opzioni visualizzazione -->
-      @if (options().activeMode !== 'letter') {
-      <div class="space-y-2">
-        <fieldset>
+      @if (options().activeMode === 'letter' || options().activeMode === 'handwriting') {
+        <fieldset class="space-y-2">
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
-            Visualizzazione:
+            {{
+              options().activeMode === 'letter' ? 'Lettere da mostrare:' : 'Lettere da esercitare:'
+            }}
           </legend>
-          <div class="space-y-2">
+          @for (filter of letterFilters; track filter.value) {
             <label
               class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
             >
               <input
-                type="checkbox"
-                class="w-5 h-5 rounded accent-(--color-primary)"
-                [checked]="options().showUppercase"
-                (change)="toggleShowUppercase()"
-                [disabled]="options().showUppercase && !options().showLowercase"
+                type="radio"
+                name="letter-filter"
+                class="w-5 h-5 accent-(--color-primary)"
+                [checked]="options().letterFilter === filter.value"
+                (change)="setLetterFilter(filter.value)"
               />
-              <span class="text-sm text-(--color-text-primary)"
-                >Mostra <strong>MAIUSCOLE</strong></span
-              >
+              <span class="text-sm text-(--color-text-primary)">{{ filter.label }}</span>
             </label>
-            <label
-              class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
-            >
-              <input
-                type="checkbox"
-                class="w-5 h-5 rounded accent-(--color-primary)"
-                [checked]="options().showLowercase"
-                (change)="toggleShowLowercase()"
-                [disabled]="options().showLowercase && !options().showUppercase"
-              />
-              <span class="text-sm text-(--color-text-primary)">Mostra minuscole</span>
-            </label>
-            <label
-              class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
-            >
-              <input
-                type="checkbox"
-                class="w-5 h-5 rounded accent-(--color-primary)"
-                [checked]="options().showCursive"
-                (change)="toggleShowCursive()"
-              />
-              <span class="text-sm text-(--color-text-primary)">Mostra in corsivo</span>
-            </label>
-          </div>
+          }
         </fieldset>
-      </div>
+      }
+
+      @if (options().activeMode === 'handwriting') {
+        <fieldset class="space-y-2">
+          <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
+            Stile di scrittura:
+          </legend>
+          @for (style of handwritingStyles; track style.value) {
+            <label
+              class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
+            >
+              <input
+                type="radio"
+                name="handwriting-style"
+                class="w-5 h-5 accent-(--color-primary)"
+                [checked]="options().handwritingStyle === style.value"
+                (change)="setHandwritingStyle(style.value)"
+              />
+              <span class="text-sm text-(--color-text-primary)">{{ style.label }}</span>
+            </label>
+          }
+        </fieldset>
+      }
+
+      <!-- Opzioni visualizzazione -->
+      @if (options().activeMode !== 'letter' && options().activeMode !== 'handwriting') {
+        <div class="space-y-2">
+          <fieldset>
+            <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
+              Visualizzazione:
+            </legend>
+            <div class="space-y-2">
+              <label
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
+              >
+                <input
+                  type="checkbox"
+                  class="w-5 h-5 rounded accent-(--color-primary)"
+                  [checked]="options().showUppercase"
+                  (change)="toggleShowUppercase()"
+                  [disabled]="options().showUppercase && !options().showLowercase"
+                />
+                <span class="text-sm text-(--color-text-primary)"
+                  >Mostra <strong>MAIUSCOLE</strong></span
+                >
+              </label>
+              <label
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
+              >
+                <input
+                  type="checkbox"
+                  class="w-5 h-5 rounded accent-(--color-primary)"
+                  [checked]="options().showLowercase"
+                  (change)="toggleShowLowercase()"
+                  [disabled]="options().showLowercase && !options().showUppercase"
+                />
+                <span class="text-sm text-(--color-text-primary)">Mostra minuscole</span>
+              </label>
+              <label
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
+              >
+                <input
+                  type="checkbox"
+                  class="w-5 h-5 rounded accent-(--color-primary)"
+                  [checked]="options().showCursive"
+                  (change)="toggleShowCursive()"
+                />
+                <span class="text-sm text-(--color-text-primary)">Mostra in corsivo</span>
+              </label>
+            </div>
+          </fieldset>
+        </div>
       }
 
       @if (options().activeMode === 'letter') {
@@ -189,7 +237,9 @@ const MODE_OPTIONS: ModeOption[] = [
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
             Stile delle lettere:
           </legend>
-          <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11">
+          <label
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
+          >
             <input
               type="radio"
               name="letter-style"
@@ -199,7 +249,9 @@ const MODE_OPTIONS: ModeOption[] = [
             />
             <span class="text-sm text-(--color-text-primary)">Stampatello</span>
           </label>
-          <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11">
+          <label
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
+          >
             <input
               type="radio"
               name="letter-style"
@@ -227,6 +279,14 @@ export class SyllableOptionsControlComponent {
 
   mobileMenuOpen = signal(false);
   readonly modeOptions = MODE_OPTIONS;
+  readonly letterFilters: ReadonlyArray<{ value: LetterFilter; label: string }> = [
+    { value: 'all', label: 'Vocali e consonanti' },
+    { value: 'vowels', label: 'Solo vocali' },
+    { value: 'consonants', label: 'Solo consonanti' },
+  ];
+  readonly handwritingStyles: ReadonlyArray<{ value: Style; label: string }> = STYLES.map(
+    (style) => ({ value: style, label: ITALIAN_STYLE_LABELS[style] }),
+  );
 
   toggleMobileMenu(): void {
     this.mobileMenuOpen.update((v) => !v);
@@ -254,6 +314,14 @@ export class SyllableOptionsControlComponent {
 
   setLetterStyle(letterStyle: 'print' | 'cursive'): void {
     this.emit({ letterStyle });
+  }
+
+  setLetterFilter(letterFilter: LetterFilter): void {
+    this.emit({ letterFilter });
+  }
+
+  setHandwritingStyle(handwritingStyle: Style): void {
+    this.emit({ handwritingStyle });
   }
 
   toggleShowUppercase(): void {
