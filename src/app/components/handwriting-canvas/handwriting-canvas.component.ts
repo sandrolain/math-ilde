@@ -168,6 +168,10 @@ const INK_COLOR = '#24566a';
         background: #fff;
         touch-action: none;
         cursor: crosshair;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
       }
       .writing-card__actions {
         display: flex;
@@ -247,6 +251,14 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
   private animationHandle: number | null = null;
   private resizeObserver?: ResizeObserver;
 
+  /**
+   * Impedisce che il gesto di scrittura faccia scorrere la pagina su touch,
+   * anche sui browser che non rispettano appieno `touch-action: none`.
+   */
+  private readonly preventTouchScroll = (event: TouchEvent): void => {
+    if (event.cancelable) event.preventDefault();
+  };
+
   constructor() {
     effect(() => {
       // Dipendenze esplicite: lettera, stile e richiesta di reset.
@@ -269,11 +281,18 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
       this.resizeObserver = new ResizeObserver(() => this.redraw());
       this.resizeObserver.observe(canvas);
     }
+    // Fallback non-passivo: su alcuni browser (es. safari mobile) `touch-action`
+    // da solo non blocca sempre lo scroll durante il disegno.
+    canvas?.addEventListener('touchstart', this.preventTouchScroll, { passive: false });
+    canvas?.addEventListener('touchmove', this.preventTouchScroll, { passive: false });
     this.redraw();
   }
 
   ngOnDestroy(): void {
     this.resizeObserver?.disconnect();
+    const canvas = this.canvasRef?.nativeElement;
+    canvas?.removeEventListener('touchstart', this.preventTouchScroll);
+    canvas?.removeEventListener('touchmove', this.preventTouchScroll);
     if (this.animationHandle !== null) cancelAnimationFrame(this.animationHandle);
   }
 

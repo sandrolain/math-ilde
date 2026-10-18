@@ -47,6 +47,21 @@ describe('HandwritingCanvasComponent', () => {
     expect(fixture.componentInstance.isCursive()).toBe(false);
   });
 
+  it('blocca lo scroll della pagina durante la scrittura su touch', async () => {
+    const fixture = await create('a');
+    const canvas = (fixture.nativeElement as HTMLElement).querySelector(
+      'canvas',
+    ) as HTMLCanvasElement;
+
+    const touchStart = new Event('touchstart', { cancelable: true });
+    canvas.dispatchEvent(touchStart);
+    expect(touchStart.defaultPrevented).toBe(true);
+
+    const touchMove = new Event('touchmove', { cancelable: true });
+    canvas.dispatchEvent(touchMove);
+    expect(touchMove.defaultPrevented).toBe(true);
+  });
+
   it('azzera il foglio quando cambia la lettera o il token di reset', async () => {
     const fixture = await create('a');
     const component = fixture.componentInstance;
