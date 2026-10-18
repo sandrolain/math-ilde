@@ -63,7 +63,40 @@ result.issues;  // messaggi in italiano (forma, dimensione, tratti)
 
 ## Note e limiti
 
-- I glifi del corsivo sono approssimativi: si possono sostituire registrando
-  modelli reali nello `TemplateStore`.
+- I glifi del corsivo incorporati sono modificabili in
+  `glyphs/corsivo.ts`. Ogni lettera è una stringa DSL in coordinate em:
+
+  ```ts
+  // Un tratto: M = partenza, S = curva attraverso punti, ; = nuovo tratto
+  a: 'M32 44 S 20 40 10 48 5 60 10 74 22 80 31 70'
+  ```
+
+  Per una grafia italiana verificata conviene registrare tratti reali invece
+  di disegnare a mano la stringa DSL. I tratti devono rispettare:
+
+  1. un array per ogni alzata di penna;
+  2. coordinate em (`y=0` rigo alto, `y=80` base, `y=120` discendenti);
+  3. ordine e verso usati nella didattica della lettera;
+  4. stile e carattere corretti (`corsivo-maiuscolo`, `A`, ecc.).
+
+  Esempio di modello registrato:
+
+  ```ts
+  calligrafoService.addTemplate({
+    id: 'italiano:corsivo-maiuscolo:A',
+    style: 'corsivo-maiuscolo',
+    char: 'A',
+    source: 'recorded',
+    strokes: [
+      [{ x: 8, y: 80 }, { x: 24, y: 4 }, { x: 44, y: 80 }],
+      [{ x: 14, y: 48 }, { x: 37, y: 48 }],
+    ],
+  });
+  ```
+
+  `addTemplate` sovrascrive il modello con lo stesso `id`, aggiorna subito
+  verifica e anteprima, poi salva in `localStorage`. Per distribuire una
+  raccolta completa, usare `exportedTemplates()` e importare il JSON tramite
+  `TemplateStore.fromJSON`.
 - Le soglie (`shapeThreshold`, `sizeTolerance`, `FAR`, peso dei puntini) sono
   valori iniziali calibrati sui test sintetici, non ancora sulla grafia reale.

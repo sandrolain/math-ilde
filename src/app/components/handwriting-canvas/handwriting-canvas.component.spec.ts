@@ -50,7 +50,7 @@ describe('HandwritingCanvasComponent', () => {
   it('blocca lo scroll della pagina durante la scrittura su touch', async () => {
     const fixture = await create('a');
     const canvas = (fixture.nativeElement as HTMLElement).querySelector(
-      'canvas',
+      '.writing-canvas',
     ) as HTMLCanvasElement;
 
     const touchStart = new Event('touchstart', { cancelable: true });
@@ -84,7 +84,7 @@ describe('HandwritingCanvasComponent', () => {
     const fixture = await create('a');
     const component = fixture.componentInstance;
     const canvas = (fixture.nativeElement as HTMLElement).querySelector(
-      'canvas',
+      '.writing-canvas',
     ) as HTMLCanvasElement;
     canvas.getBoundingClientRect = () =>
       ({

@@ -42,50 +42,59 @@ const INK_COLOR = '#24566a';
   template: `
     <section class="writing-card" aria-labelledby="writing-title">
       <h2 id="writing-title">Scrivi questa lettera</h2>
-      <div class="writing-card__prompt-wrap">
-        <p
-          class="writing-card__prompt"
-          [class.writing-card__prompt--cursive]="isCursive()"
-          aria-live="polite"
-        >
-          {{ displayChar() }}
-        </p>
-      </div>
-      <p class="writing-card__hint">{{ styleLabel() }}</p>
+      <div class="writing-workspace">
+        <div class="writing-controls" aria-label="Comandi scrittura">
+          <div class="writing-controls__top">
+          <ng-content select="[writing-controls-top]"></ng-content>
+          </div>
+          <div class="writing-card__actions">
+            <button type="button" class="btn btn-secondary" (click)="showModel()">
+              <span aria-hidden="true">✏️</span> Mostra
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="undo()"
+              [disabled]="strokes().length === 0"
+            >
+              <span aria-hidden="true">↩️</span> Annulla
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="clear()">
+              <span aria-hidden="true">🧽</span> Cancella
+            </button>
+            <button type="button" class="btn btn-primary" (click)="evaluate()">
+              <span aria-hidden="true">✅</span> Controlla
+            </button>
+          </div>
+        </div>
 
-      <div class="writing-stage">
-        <canvas
-          #canvas
-          class="writing-canvas"
-          width="640"
-          height="400"
-          aria-label="Riquadro per scrivere la lettera a mano"
-          (pointerdown)="onPointerDown($event)"
-          (pointermove)="onPointerMove($event)"
-          (pointerup)="onPointerUp($event)"
-          (pointercancel)="onPointerUp($event)"
-          (lostpointercapture)="onPointerUp($event)"
-        ></canvas>
-      </div>
-
-      <div class="writing-card__actions">
-        <button type="button" class="btn btn-secondary" (click)="showModel()">
-          <span aria-hidden="true">✏️</span> Mostra
-        </button>
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="undo()"
-          [disabled]="strokes().length === 0"
-        >
-          <span aria-hidden="true">↩️</span> Annulla
-        </button>
-        <button type="button" class="btn btn-secondary" (click)="clear()">
-          <span aria-hidden="true">🧽</span> Cancella
-        </button>
-        <button type="button" class="btn btn-primary" (click)="evaluate()">
-          <span aria-hidden="true">✅</span> Controlla
-        </button>
+        <div class="writing-content">
+          <div class="writing-card__prompt-wrap" aria-live="polite">
+            <canvas
+              #modelPreview
+              class="writing-card__model-preview"
+              width="280"
+              height="160"
+              [attr.aria-label]="'Modello della lettera ' + displayChar()"
+            ></canvas>
+            <span class="sr-only">{{ displayChar() }}</span>
+          </div>
+          <p class="writing-card__hint">{{ styleLabel() }}</p>
+          <div class="writing-stage">
+            <canvas
+              #canvas
+              class="writing-canvas"
+              width="640"
+              height="400"
+              aria-label="Riquadro per scrivere la lettera a mano"
+              (pointerdown)="onPointerDown($event)"
+              (pointermove)="onPointerMove($event)"
+              (pointerup)="onPointerUp($event)"
+              (pointercancel)="onPointerUp($event)"
+              (lostpointercapture)="onPointerUp($event)"
+            ></canvas>
+          </div>
+        </div>
       </div>
 
       @if (feedback(); as fb) {
@@ -127,58 +136,74 @@ const INK_COLOR = '#24566a';
       .writing-card__prompt-wrap {
         display: flex;
         justify-content: center;
-        margin: 0.75rem 0 1.25rem;
+        margin: 0 0 0.75rem;
       }
-      .writing-card__prompt {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 5rem;
-        min-height: 5rem;
-        padding: 0.5rem 1.5rem;
-        margin: 0;
+      .writing-card__model-preview {
+        display: block;
+        width: min(17.5rem, 100%);
+        height: 10rem;
         border: 3px solid var(--color-primary);
         border-radius: 1.25rem;
         background: var(--color-info-surface, #eef7fb);
-        color: var(--color-primary-strong);
-        font-size: clamp(3.5rem, 16vw, 6rem);
-        font-weight: 800;
-        line-height: 1.15;
-      }
-      .writing-card__prompt--cursive {
-        font-family: 'Playwrite IT Trad', 'Varela Round', cursive;
-        font-weight: 400;
+        user-select: none;
+        -webkit-user-select: none;
       }
       .writing-card__hint {
-        margin: 0.35rem 0 1rem;
+        margin: 0 0 0.75rem;
         color: var(--color-text-secondary);
         font-size: 1.05rem;
+        text-align: center;
+      }
+      .writing-workspace {
+        display: grid;
+        grid-template-columns: minmax(9rem, 12rem) minmax(0, 32rem);
+        align-items: center;
+        justify-content: center;
+        gap: clamp(1rem, 3vw, 2rem);
+      }
+      .writing-content {
+        min-width: 0;
+      }
+      .writing-controls,
+      .writing-controls__top,
+      .writing-card__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .writing-controls__top {
+        padding-bottom: 0.6rem;
+      }
+      .writing-controls button {
+        width: 100%;
+        height: 3.5rem;
+        min-height: 3.5rem;
+        white-space: nowrap;
+      }
+      .writing-controls {
+        align-self: stretch;
+        justify-content: center;
       }
       .writing-stage {
         display: flex;
         justify-content: center;
+        min-width: 0;
       }
       .writing-canvas {
         display: block;
         width: 100%;
-        max-width: 40rem;
+        max-width: 32rem;
         aspect-ratio: 8 / 5;
         border: 3px dashed var(--color-primary);
         border-radius: 0.85rem;
         background: #fff;
         touch-action: none;
         cursor: crosshair;
-        user-select: none;
-        -webkit-user-select: none;
         -webkit-touch-callout: none;
         -webkit-tap-highlight-color: transparent;
       }
       .writing-card__actions {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 0.5rem;
-        margin-top: 1rem;
+        margin-top: 0;
       }
       .writing-card__actions button:disabled {
         opacity: 0.45;
@@ -212,6 +237,20 @@ const INK_COLOR = '#24566a';
         margin: 0.35rem 0 0;
         font-size: 0.95rem;
       }
+      @media (max-width: 42rem) {
+        .writing-workspace {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+        .writing-controls,
+        .writing-controls__top,
+        .writing-card__actions {
+          width: 100%;
+        }
+        .writing-canvas {
+          max-width: 32rem;
+        }
+      }
     `,
   ],
 })
@@ -219,6 +258,7 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
   private readonly calligrafo = inject(CalligrafoService);
 
   @ViewChild('canvas') private canvasRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('modelPreview') private modelPreviewRef?: ElementRef<HTMLCanvasElement>;
 
   target = input.required<string>();
   writingStyle = input<Style>('stampatello-maiuscolo');
@@ -271,6 +311,7 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
       untracked(() => {
         this.resetState();
         this.redraw();
+        this.redrawModelPreview();
       });
     });
   }
@@ -278,14 +319,21 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     const canvas = this.canvasRef?.nativeElement;
     if (canvas && typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver(() => this.redraw());
+      this.resizeObserver = new ResizeObserver(() => {
+        this.redraw();
+        this.redrawModelPreview();
+      });
       this.resizeObserver.observe(canvas);
+      if (this.modelPreviewRef?.nativeElement) {
+        this.resizeObserver.observe(this.modelPreviewRef.nativeElement);
+      }
     }
     // Fallback non-passivo: su alcuni browser (es. safari mobile) `touch-action`
     // da solo non blocca sempre lo scroll durante il disegno.
     canvas?.addEventListener('touchstart', this.preventTouchScroll, { passive: false });
     canvas?.addEventListener('touchmove', this.preventTouchScroll, { passive: false });
     this.redraw();
+    this.redrawModelPreview();
   }
 
   ngOnDestroy(): void {
@@ -481,6 +529,43 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
     if (this.current.length > 0) this.drawStrokes(context, scale, [this.current]);
   }
 
+  private redrawModelPreview(): void {
+    const canvas = this.modelPreviewRef?.nativeElement;
+    if (!canvas) return;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    const width = canvas.clientWidth || canvas.width;
+    const height = canvas.clientHeight || canvas.height;
+    const dpr = window.devicePixelRatio || 1;
+    const pixelWidth = Math.round(width * dpr);
+    const pixelHeight = Math.round(height * dpr);
+    if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
+    if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
+
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.clearRect(0, 0, width, height);
+    context.fillStyle = '#edf7fb';
+    context.fillRect(0, 0, width, height);
+
+    const template = this.calligrafo.findTemplate(this.writingStyle(), this.target());
+    if (!template) return;
+    const points = template.strokes.flat();
+    if (points.length === 0) return;
+    const bounds = bbox(points);
+    this.drawGuides(context, width, height, height / EM_VIEW_HEIGHT);
+    this.drawGhost(
+      context,
+      width,
+      height / EM_VIEW_HEIGHT,
+      {
+        template,
+        centerX: (bounds.minX + bounds.maxX) / 2,
+        progress: template.strokes.length,
+      },
+      false,
+    );
+  }
+
   private drawGuides(
     context: CanvasRenderingContext2D,
     width: number,
@@ -546,8 +631,14 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
     context.restore();
   }
 
-  private drawGhost(context: CanvasRenderingContext2D, width: number, scale: number): void {
-    const ghost = this.ghost;
+  private drawGhost(
+    context: CanvasRenderingContext2D,
+    width: number,
+    scale: number,
+    previewGhost: { template: Template; centerX: number; progress: number } | null = this.ghost,
+    showStartMarkers = true,
+  ): void {
+    const ghost = previewGhost;
     if (!ghost) return;
     const strokes = ghost.template.strokes;
     const progress = ghost.progress;
@@ -576,6 +667,11 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
         else context.lineTo(point.x, point.y);
       }
       context.stroke();
+    }
+
+    if (!showStartMarkers) {
+      context.restore();
+      return;
     }
 
     context.fillStyle = 'rgba(36, 86, 106, 0.9)';

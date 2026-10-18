@@ -87,10 +87,14 @@ function generateSyllable(opts: SyllableOptions): string {
           }
 
           @if (options().activeMode === 'handwriting') {
-            <div class="flex flex-col items-center gap-4">
-              <div class="flex flex-wrap justify-center gap-3" aria-label="Comandi scrittura">
+            <app-handwriting-canvas
+              [target]="currentLetter()"
+              [writingStyle]="options().handwritingStyle"
+              [clearToken]="handwritingClear()"
+            >
+              <div writing-controls-top class="flex flex-col gap-3">
                 <button
-                  class="btn btn-primary min-h-12 text-lg"
+                  class="btn btn-primary w-full h-14 min-h-14 whitespace-nowrap text-lg"
                   type="button"
                   (click)="generateNext()"
                   aria-label="Mostra una nuova lettera da scrivere"
@@ -100,7 +104,7 @@ function generateSyllable(opts: SyllableOptions): string {
                 </button>
                 @if (speechService.isSupported) {
                   <button
-                    class="btn btn-secondary min-h-12 text-lg"
+                    class="btn btn-secondary w-full h-14 min-h-14 whitespace-nowrap text-lg"
                     type="button"
                     (click)="speakCurrentLetter()"
                     [attr.aria-label]="
@@ -112,12 +116,7 @@ function generateSyllable(opts: SyllableOptions): string {
                   </button>
                 }
               </div>
-              <app-handwriting-canvas
-                [target]="currentLetter()"
-                [writingStyle]="options().handwritingStyle"
-                [clearToken]="handwritingClear()"
-              />
-            </div>
+            </app-handwriting-canvas>
           }
 
           @if (options().activeMode !== 'letter' && options().activeMode !== 'handwriting') {
