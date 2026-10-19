@@ -97,7 +97,7 @@ const INK_COLOR = '#24566a';
         </div>
       </div>
 
-      @if (feedback(); as fb) {
+      @if (visibleFeedback(); as fb) {
         <div
           class="writing-feedback"
           [class.writing-feedback--success]="fb.ok"
@@ -263,6 +263,7 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
   target = input.required<string>();
   writingStyle = input<Style>('stampatello-maiuscolo');
   sizeTolerance = input<number | null>(16);
+  feedbackInPopup = input(false);
   /** Cambiandone il valore il foglio e il modello vengono azzerati (es. "Nuova lettera"). */
   clearToken = input(0);
 
@@ -271,6 +272,9 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
 
   readonly strokes = signal<Stroke[]>([]);
   readonly feedback = signal<Feedback | null>(null);
+  readonly visibleFeedback = computed(() =>
+    this.feedbackInPopup() ? null : this.feedback(),
+  );
 
   readonly displayChar = computed(() => {
     const char = this.target();

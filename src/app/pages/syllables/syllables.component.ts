@@ -14,7 +14,10 @@ import { SyllableOptionsControlComponent } from '../../components/syllable-optio
 import { LetterGridComponent } from '../../components/letter-grid/letter-grid.component';
 import { HeaderComponent } from '../../components/header/header.component';
 import { HandwritingCanvasComponent } from '../../components/handwriting-canvas/handwriting-canvas.component';
+import { FeedbackComponent } from '../../components/feedback/feedback.component';
+import { FeedbackService } from '../../services/feedback.service';
 import type { SyllableOptions } from '../../types/exercise.types';
+import type { FeedbackType } from '../../types/exercise.types';
 import {
   CONSONANTS,
   DOUBLES,
@@ -61,6 +64,7 @@ function generateSyllable(opts: SyllableOptions): string {
     SyllableOptionsControlComponent,
     LetterGridComponent,
     HandwritingCanvasComponent,
+    FeedbackComponent,
   ],
   host: {
     class: 'block',
@@ -91,6 +95,7 @@ function generateSyllable(opts: SyllableOptions): string {
               [target]="currentLetter()"
               [writingStyle]="options().handwritingStyle"
               [clearToken]="handwritingClear()"
+              [feedbackInPopup]="true"
               (result)="onHandwritingResult($event)"
             >
               <div writing-controls-top class="flex flex-col gap-3">
@@ -150,6 +155,16 @@ function generateSyllable(opts: SyllableOptions): string {
                   </p>
                 }
               </section>
+            }
+            @if (handwritingFeedback(); as feedback) {
+              <app-feedback
+                [show]="true"
+                [type]="feedback.type"
+                [message]="feedback.message"
+                [hint]="'Lettera ' + currentLetter().toUpperCase()"
+                (close)="closeHandwritingFeedback()"
+                (next)="nextAfterHandwritingFeedback()"
+              />
             }
           }
 
@@ -314,6 +329,7 @@ function generateSyllable(opts: SyllableOptions): string {
 export class SyllablesComponent implements OnInit {
   private readonly syllabificationService = inject(SyllabificationService);
   private readonly storageService = inject(SyllableOptionsStorageService);
+  private readonly feedbackService = inject(FeedbackService);
   readonly speechService = inject(SpeechService);
   readonly alphabet = ALPHABET;
 
@@ -321,6 +337,7 @@ export class SyllablesComponent implements OnInit {
   handwritingPassed = signal<string[]>(
     this.storageService.loadHandwritingProgress(this.options().handwritingStyle),
   );
+  handwritingFeedback = signal<{ type: FeedbackType; message: string } | null>(null);
   currentRawContent = signal<string | string[]>('ba');
   /** Incrementato a ogni "Nuova lettera" per azzerare l'area di scrittura. */
   handwritingClear = signal(0);
@@ -447,7 +464,13 @@ export class SyllablesComponent implements OnInit {
   }
 
   onHandwritingResult(result: boolean | null): void {
-    if (result !== true) return;
+    if (result === null) return;
+    const type: FeedbackType = result ? 'success' : 'retry';
+    this.handwritingFeedback.set({
+      type,
+      message: this.feedbackService.getMessage(type),
+    });
+    if (!result) return;
     const letter = this.currentLetter().toLowerCase();
     if (!this.alphabet.includes(letter)) return;
     this.handwritingPassed.update((passed) => {
@@ -456,6 +479,15 @@ export class SyllablesComponent implements OnInit {
       this.storageService.saveHandwritingProgress(this.options().handwritingStyle, next);
       return next;
     });
+  }
+
+  closeHandwritingFeedback(): void {
+    this.handwritingFeedback.set(null);
+  }
+
+  nextAfterHandwritingFeedback(): void {
+    this.handwritingFeedback.set(null);
+    this.generateNext();
   }
 
   onOptionsChange(newOptions: SyllableOptions): void {
