@@ -36,4 +36,31 @@ describe('SyllablesComponent', () => {
     expect(component.handwritingClear()).toBeGreaterThan(tokenAllaEntrata);
     expect('aeiou').toContain(component.currentLetter());
   });
+
+  it('in modalità traguardo sceglie solo lettere non ancora superate', () => {
+    component.onOptionsChange({
+      ...component.options(),
+      activeMode: 'handwriting',
+      handwritingMilestone: true,
+    });
+    component.handwritingPassed.set(component.alphabet.filter((letter) => letter !== 'q'));
+
+    component.generateNext();
+
+    expect(component.currentLetter()).toBe('q');
+  });
+
+  it('segna la lettera come superata dopo una verifica corretta', () => {
+    component.onOptionsChange({
+      ...component.options(),
+      activeMode: 'handwriting',
+      handwritingMilestone: true,
+    });
+    component.currentRawContent.set('m');
+
+    component.onHandwritingResult(true);
+
+    expect(component.isHandwritingLetterPassed('m')).toBe(true);
+    expect(component.handwritingPassed()).toContain('m');
+  });
 });

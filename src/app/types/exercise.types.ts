@@ -248,6 +248,8 @@ export interface SyllableOptions {
   letterFilter: LetterFilter;
   /** Stile usato dalla modalità "Scrivi" (Calligrafo). */
   handwritingStyle: HandwritingStyle;
+  /** Se true, propone solo lettere non ancora superate nella scrittura. */
+  handwritingMilestone: boolean;
   activeMode: SyllableMode;
 }
 export type FeedbackType = 'success' | 'retry' | 'show-answer';

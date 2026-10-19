@@ -163,6 +163,25 @@ const MODE_OPTIONS: ModeOption[] = [
       @if (options().activeMode === 'handwriting') {
         <fieldset class="space-y-2">
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
+            Percorso:
+          </legend>
+          <label
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
+          >
+            <input
+              type="checkbox"
+              class="w-5 h-5 rounded accent-(--color-primary)"
+              [checked]="options().handwritingMilestone"
+              (change)="toggleHandwritingMilestone()"
+            />
+            <span class="text-sm text-(--color-text-primary)">Modalità traguardo</span>
+          </label>
+        </fieldset>
+      }
+
+      @if (options().activeMode === 'handwriting') {
+        <fieldset class="space-y-2">
+          <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
             Stile di scrittura:
           </legend>
           @for (style of handwritingStyles; track style.value) {
@@ -322,6 +341,10 @@ export class SyllableOptionsControlComponent {
 
   setHandwritingStyle(handwritingStyle: Style): void {
     this.emit({ handwritingStyle });
+  }
+
+  toggleHandwritingMilestone(): void {
+    this.emit({ handwritingMilestone: !this.options().handwritingMilestone });
   }
 
   toggleShowUppercase(): void {
