@@ -36,6 +36,11 @@ __screenshots__/
 /.impeccable
 skills-lock.json
 
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
 # System files
 .DS_Store
 Thumbs.db

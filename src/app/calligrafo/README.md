@@ -61,6 +61,90 @@ result.issues;  // messaggi in italiano (forma, dimensione, tratti)
 - `HandwritingCanvasComponent` disegna le righe guida, cattura i tratti con i
   Pointer Events, anima il modello ("Mostra") e mostra stelline e messaggi.
 
+## Estrazione da font
+
+È disponibile uno script dev-only che converte un font `.ttf` o `.otf` in
+tratti centrali semplificati:
+
+```bash
+npm run font:extract -- \
+  --font-css-url 'https://fonts.googleapis.com/css2?family=Playwrite+IT+Trad:wght@400&display=swap' \
+  --style corsivo-maiuscolo \
+  --output tmp/corsivo-maiuscolo.ts
+```
+
+Opzioni:
+
+- `--chars ABC...` limita le lettere estratte;
+- `--font-url URL` usa direttamente un asset TTF/OTF;
+- `--font-css-url URL` estrae il primo asset TTF dal CSS del font;
+- `--format json` mantiene l'output `Template[]`; il formato predefinito è
+  TypeScript DSL compatibile con `glyphs/corsivo.ts`;
+- `--mode outline` esporta i contorni originali; il formato predefinito
+  `centerline` calcola una linea centrale rasterizzata;
+- `--export-name NAME` cambia il nome della costante TypeScript;
+- `--height 80` imposta l'altezza normalizzata in em;
+- `--samples 12` controlla i campioni delle curve Bézier.
+
+Lo script usa [font-to-templates.mjs](../../../scripts/font-to-templates.mjs),
+normalizza ogni glifo sulle righe em e produce una mappa
+`Record<string, string>` importabile direttamente come `CORSIVO_MINUSCOLO` o
+`CORSIVO_MAIUSCOLO`. Con `--format json` produce invece `templates[]`
+importabili con `TemplateStore.fromJSON`. La modalità `centerline` evita di
+usare l'outline come tratto e ricava una linea mediana dalla forma rasterizzata.
+Non può però ricostruire perfettamente l'ordine didattico della penna: ordine,
+verso, collegamenti e punti di partenza vanno controllati manualmente prima di
+usarli nella verifica della scrittura.
+Includere font e path generati solo se la licenza lo consente.
+
+### Pipeline Python a linea centrale
+
+Per ricostruire tratti semplici a partire dal peso 100 del font è disponibile
+anche [build_data.py](../../../tools/playwrite/build_data.py). La pipeline usa
+`fonttools`, `numpy`, `opencv` e `scikit-image`: rasterizza i contorni,
+calcola lo scheletro, rimuove i tratti troppo corti e genera il DSL `M/L`.
+
+Installazione:
+
+```bash
+python3 -m pip install -r tools/playwrite/requirements.txt
+```
+
+Esempi:
+
+```bash
+python3 tools/playwrite/build_data.py \
+  --font /path/to/playwrite-100.ttf \
+  --chars abcdefghijklmnopqrstuvwxyz \
+  --export-name CORSIVO_MINUSCOLO \
+  --output src/app/calligrafo/glyphs/corsivo-minuscolo.ts
+
+python3 tools/playwrite/build_data.py \
+  --font /path/to/playwrite-100.ttf \
+  --chars ABCDEFGHIJKLMNOPQRSTUVWXYZ \
+  --export-name CORSIVO_MAIUSCOLO \
+  --output src/app/calligrafo/glyphs/corsivo-maiuscolo.ts
+```
+
+Il font variabile viene istanziato automaticamente al peso `100`. L’algoritmo
+ricostruisce la forma centrale, ma non può dedurre con certezza l’ordine
+didattico dei tratti: i glyph generati vanno quindi controllati visivamente
+prima di usarli come modelli di verifica.
+
+Per Playwrite IT Trad usare lo stesso comando due volte, cambiando stile:
+
+```bash
+npm run font:extract -- \
+  --font-css-url 'https://fonts.googleapis.com/css2?family=Playwrite+IT+Trad:wght@400&display=swap' \
+  --style corsivo-minuscolo \
+  --output tmp/playwrite-minuscolo.json
+
+npm run font:extract -- \
+  --font-css-url 'https://fonts.googleapis.com/css2?family=Playwrite+IT+Trad:wght@400&display=swap' \
+  --style corsivo-maiuscolo \
+  --output tmp/playwrite-maiuscolo.json
+```
+
 ## Note e limiti
 
 - I glifi del corsivo incorporati sono modificabili in
