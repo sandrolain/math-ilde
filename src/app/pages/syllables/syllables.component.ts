@@ -121,6 +121,16 @@ function generateSyllable(opts: SyllableOptions): string {
                     {{ speechService.isSpeaking() ? 'In ascolto...' : 'Ascolta' }}
                   </button>
                 }
+                @if (options().handwritingMilestone) {
+                  <button
+                    class="btn btn-secondary w-full h-14 min-h-14 whitespace-nowrap text-lg"
+                    type="button"
+                    (click)="resetHandwritingProgress()"
+                    aria-label="Azzera il progresso del traguardo"
+                  >
+                    Azzera progresso
+                  </button>
+                }
               </div>
             </app-handwriting-canvas>
             @if (options().handwritingMilestone) {
@@ -486,6 +496,19 @@ export class SyllablesComponent implements OnInit {
   }
 
   nextAfterHandwritingFeedback(): void {
+    this.handwritingFeedback.set(null);
+    this.generateNext();
+  }
+
+  resetHandwritingProgress(): void {
+    if (
+      typeof window !== 'undefined' &&
+      !window.confirm('Vuoi azzerare il progresso del traguardo per questo stile?')
+    ) {
+      return;
+    }
+    this.storageService.clearHandwritingProgress(this.options().handwritingStyle);
+    this.handwritingPassed.set([]);
     this.handwritingFeedback.set(null);
     this.generateNext();
   }

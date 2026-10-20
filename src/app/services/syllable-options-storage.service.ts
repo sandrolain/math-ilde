@@ -74,4 +74,8 @@ export class SyllableOptionsStorageService {
       console.error('Errore nel salvataggio dei progressi di scrittura:', error);
     }
   }
+
+  clearHandwritingProgress(style: Style): void {
+    this.saveHandwritingProgress(style, []);
+  }
 }
