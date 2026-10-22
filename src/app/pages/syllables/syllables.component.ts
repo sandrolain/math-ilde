@@ -30,6 +30,7 @@ import {
   SENTENCES,
   ALPHABET,
 } from '../../data/syllable-data';
+import type { WordCategory } from '../../types/exercise.types';
 
 function randomItem<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -92,7 +93,9 @@ function generateSyllable(opts: SyllableOptions): string {
 
           @if (options().activeMode === 'handwriting') {
             <app-handwriting-canvas
-              [target]="currentLetter()"
+              [target]="
+                options().handwritingTarget === 'word' ? currentWord() : currentLetter()
+              "
               [writingStyle]="options().handwritingStyle"
               [clearToken]="handwritingClear()"
               [feedbackInPopup]="true"
@@ -103,10 +106,14 @@ function generateSyllable(opts: SyllableOptions): string {
                   class="btn btn-primary w-full h-14 min-h-14 whitespace-nowrap text-lg"
                   type="button"
                   (click)="generateNext()"
-                  aria-label="Mostra una nuova lettera da scrivere"
+                  [attr.aria-label]="
+                    options().handwritingTarget === 'word'
+                      ? 'Mostra una nuova parola da scrivere'
+                      : 'Mostra una nuova lettera da scrivere'
+                  "
                 >
                   <span aria-hidden="true">🔄</span>
-                  Nuova lettera
+                  {{ options().handwritingTarget === 'word' ? 'Nuova parola' : 'Nuova lettera' }}
                 </button>
                 @if (speechService.isSupported) {
                   <button
@@ -114,13 +121,18 @@ function generateSyllable(opts: SyllableOptions): string {
                     type="button"
                     (click)="speakCurrentLetter()"
                     [attr.aria-label]="
-                      speechService.isSpeaking() ? 'Lettura in corso' : 'Ascolta la lettera'
+                      speechService.isSpeaking()
+                        ? 'Lettura in corso'
+                        : options().handwritingTarget === 'word'
+                          ? 'Ascolta la parola'
+                          : 'Ascolta la lettera'
                     "
                   >
                     <span aria-hidden="true">🔊</span>
                     {{ speechService.isSpeaking() ? 'In ascolto...' : 'Ascolta' }}
                   </button>
                 }
+
                 @if (options().handwritingMilestone) {
                   <button
                     class="btn btn-secondary w-full h-14 min-h-14 whitespace-nowrap text-lg"
@@ -171,14 +183,21 @@ function generateSyllable(opts: SyllableOptions): string {
                 [show]="true"
                 [type]="feedback.type"
                 [message]="feedback.message"
-                [hint]="'Lettera ' + currentLetter().toUpperCase()"
+                [hint]="
+                  options().handwritingTarget === 'word'
+                    ? 'Parola: ' + currentWord()
+                    : 'Lettera ' + currentLetter().toUpperCase()
+                "
                 (close)="closeHandwritingFeedback()"
                 (next)="nextAfterHandwritingFeedback()"
               />
             }
           }
 
-          @if (options().activeMode !== 'letter' && options().activeMode !== 'handwriting') {
+          @if (
+            options().activeMode !== 'letter' &&
+            options().activeMode !== 'handwriting'
+          ) {
             @if (displayUppercase()) {
               <section aria-label="Testo in maiuscolo">
                 <app-syllable-display
@@ -258,13 +277,19 @@ function generateSyllable(opts: SyllableOptions): string {
               </button>
             }
           </div>
-        } @else if (options().activeMode !== 'letter' && options().activeMode !== 'handwriting') {
+        } @else if (
+          options().activeMode !== 'letter' &&
+          options().activeMode !== 'handwriting'
+        ) {
           <p class="text-center text-sm text-slate-600" role="status">
             La lettura vocale non è disponibile su questo dispositivo.
           </p>
         }
 
-        @if (options().activeMode !== 'letter' && options().activeMode !== 'handwriting') {
+        @if (
+          options().activeMode !== 'letter' &&
+          options().activeMode !== 'handwriting'
+        ) {
           <button
             class="btn btn-primary btn-large mt-4 min-w-45 min-h-14 text-xl"
             (click)="generateNext()"
@@ -355,6 +380,10 @@ export class SyllablesComponent implements OnInit {
     const content = this.currentRawContent();
     return typeof content === 'string' ? content : 'a';
   });
+  currentWord = computed(() => {
+    const content = this.currentRawContent();
+    return typeof content === 'string' ? content : 'uno';
+  });
   displayedLetters = computed(() => {
     const filter = this.options().letterFilter;
     if (filter === 'vowels') return this.alphabet.filter((letter) => 'aeiou'.includes(letter));
@@ -430,19 +459,34 @@ export class SyllablesComponent implements OnInit {
         this.currentRawContent.set('');
         break;
       case 'handwriting': {
-        let letters =
-          opts.letterFilter === 'vowels'
-            ? this.alphabet.filter((letter) => 'aeiou'.includes(letter))
-            : opts.letterFilter === 'consonants'
-              ? this.alphabet.filter((letter) => !'aeiou'.includes(letter))
-              : this.alphabet;
-        if (opts.handwritingMilestone) {
-          const passed = new Set(this.handwritingPassed());
-          letters = letters.filter((letter) => !passed.has(letter));
-          if (letters.length === 0) return;
+        if (opts.handwritingTarget === 'word') {
+          const words: Record<WordCategory, readonly string[]> = {
+            number: NUMBERS,
+            animal: ANIMALS,
+            name: NAMES,
+            things: THINGS,
+          };
+          const availableWords = words[opts.wordCategory].filter(
+            (word) =>
+              word.replaceAll(' ', '').length <= 8 &&
+              (opts.wordLength === 'any' ||
+                word.replaceAll(' ', '').length === opts.wordLength),
+          );
+          this.currentRawContent.set(randomItem(availableWords));
+        } else {
+          let letters =
+            opts.letterFilter === 'vowels'
+              ? this.alphabet.filter((letter) => 'aeiou'.includes(letter))
+              : opts.letterFilter === 'consonants'
+                ? this.alphabet.filter((letter) => !'aeiou'.includes(letter))
+                : this.alphabet;
+          if (opts.handwritingMilestone) {
+            const passed = new Set(this.handwritingPassed());
+            letters = letters.filter((letter) => !passed.has(letter));
+            if (letters.length === 0) return;
+          }
+          this.currentRawContent.set(randomItem(letters));
         }
-        const letter = randomItem(letters);
-        this.currentRawContent.set(letter);
         // Azzera sempre l'area di scrittura (lettera scritta e modello mostrato),
         // anche quando esce la stessa lettera.
         this.handwritingClear.update((value) => value + 1);
@@ -525,7 +569,10 @@ export class SyllablesComponent implements OnInit {
     }
     // In modalità scrittura ogni modifica alle impostazioni laterali azzera
     // l'esercizio: nuova lettera e area di scrittura pulita.
-    if (newOptions.activeMode !== prevMode || newOptions.activeMode === 'handwriting') {
+    if (
+      newOptions.activeMode !== prevMode ||
+      newOptions.activeMode === 'handwriting'
+    ) {
       this.generateNext();
     }
   }

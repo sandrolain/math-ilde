@@ -16,6 +16,9 @@ const DEFAULT_OPTIONS: SyllableOptions = {
   letterFilter: 'all',
   handwritingStyle: 'stampatello-maiuscolo',
   handwritingMilestone: false,
+  handwritingTarget: 'letter',
+  wordCategory: 'number',
+  wordLength: 'any',
   activeMode: 'syllable',
 };
 
@@ -39,7 +42,15 @@ export class SyllableOptionsStorageService {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        return { ...DEFAULT_OPTIONS, ...JSON.parse(stored) } as SyllableOptions;
+        const parsed: unknown = JSON.parse(stored);
+        const storedOptions =
+          parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+        const options = { ...DEFAULT_OPTIONS, ...storedOptions };
+        if (storedOptions['activeMode'] === 'word') {
+          options.activeMode = 'handwriting';
+          options.handwritingTarget = 'word';
+        }
+        return options as SyllableOptions;
       }
     } catch (error) {
       console.error('Errore nel caricamento delle opzioni sillabe:', error);

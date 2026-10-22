@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { SyllablesComponent } from './syllables.component';
+import { ANIMALS } from '../../data/syllable-data';
 
 describe('SyllablesComponent', () => {
   let fixture: ComponentFixture<SyllablesComponent>;
@@ -62,5 +63,43 @@ describe('SyllablesComponent', () => {
 
     expect(component.isHandwritingLetterPassed('m')).toBe(true);
     expect(component.handwritingPassed()).toContain('m');
+  });
+
+  it('genera parole brevi dalla categoria scelta', () => {
+    component.onOptionsChange({
+      ...component.options(),
+      activeMode: 'handwriting',
+      handwritingTarget: 'word',
+      wordCategory: 'animal',
+    });
+
+    expect(component.currentWord().length).toBeLessThanOrEqual(8);
+    expect(ANIMALS).toContain(component.currentWord());
+  });
+
+  it('rigenera la parola quando cambia categoria', () => {
+    component.onOptionsChange({
+      ...component.options(),
+      activeMode: 'handwriting',
+      handwritingTarget: 'word',
+      wordCategory: 'name',
+    });
+    const firstCategoryWord = component.currentWord();
+
+    component.onOptionsChange({ ...component.options(), wordCategory: 'things' });
+
+    expect(component.currentWord()).not.toBe(firstCategoryWord);
+  });
+
+  it('rispetta la lunghezza scelta quando la categoria contiene parole disponibili', () => {
+    component.onOptionsChange({
+      ...component.options(),
+      activeMode: 'handwriting',
+      handwritingTarget: 'word',
+      wordCategory: 'animal',
+      wordLength: 4,
+    });
+
+    expect(component.currentWord().length).toBe(4);
   });
 });

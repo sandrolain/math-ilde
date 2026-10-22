@@ -190,6 +190,7 @@ export const ANIMALS: readonly string[] = [
 ];
 
 export const NAMES: readonly string[] = [
+  'Ada',
   'Alessandro',
   'Alice',
   'Andrea',
@@ -228,6 +229,7 @@ export const NAMES: readonly string[] = [
   'Simone',
   'Sofia',
   'Stefano',
+  'Teo',
   'Tommaso',
   'Valentina',
   'Vittoria',
@@ -239,8 +241,11 @@ export const NAMES: readonly string[] = [
   'Fabio',
   'Giorgio',
   'Laura',
+  'Leo',
+  'Lia',
   'Maria',
   'Mattia',
+  'Mia',
   'Pietro',
   'Rosa',
   'Salvatore',

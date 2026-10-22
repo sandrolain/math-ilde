@@ -1,6 +1,13 @@
 import { Component, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
-import type { LetterFilter, SyllableOptions, SyllableMode } from '../../types/exercise.types';
+import type {
+  LetterFilter,
+  SyllableOptions,
+  SyllableMode,
+  WordCategory,
+  WordLength,
+} from '../../types/exercise.types';
 import { ITALIAN_STYLE_LABELS, STYLES, type Style } from '../../calligrafo';
+import { ANIMALS, NAMES, NUMBERS, THINGS } from '../../data/syllable-data';
 
 interface ModeOption {
   icon: string;
@@ -136,7 +143,40 @@ const MODE_OPTIONS: ModeOption[] = [
         </div>
       }
 
-      @if (options().activeMode === 'letter' || options().activeMode === 'handwriting') {
+      @if (
+        options().activeMode === 'handwriting'
+      ) {
+        <fieldset class="space-y-2">
+          <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
+            Cosa vuoi scrivere:
+          </legend>
+          <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11">
+            <input
+              type="radio"
+              name="handwriting-target"
+              class="w-5 h-5 accent-(--color-primary)"
+              [checked]="options().handwritingTarget === 'letter'"
+              (change)="setHandwritingTarget('letter')"
+            />
+            <span class="text-sm text-(--color-text-primary)">Lettere</span>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11">
+            <input
+              type="radio"
+              name="handwriting-target"
+              class="w-5 h-5 accent-(--color-primary)"
+              [checked]="options().handwritingTarget === 'word'"
+              (change)="setHandwritingTarget('word')"
+            />
+            <span class="text-sm text-(--color-text-primary)">Parole</span>
+          </label>
+        </fieldset>
+      }
+
+      @if (
+        options().activeMode === 'letter' ||
+        (options().activeMode === 'handwriting' && options().handwritingTarget === 'letter')
+      ) {
         <fieldset class="space-y-2">
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
             {{
@@ -160,7 +200,9 @@ const MODE_OPTIONS: ModeOption[] = [
         </fieldset>
       }
 
-      @if (options().activeMode === 'handwriting') {
+      @if (
+        options().activeMode === 'handwriting' && options().handwritingTarget === 'letter'
+      ) {
         <fieldset class="space-y-2">
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
             Percorso:
@@ -176,6 +218,53 @@ const MODE_OPTIONS: ModeOption[] = [
             />
             <span class="text-sm text-(--color-text-primary)">Modalità traguardo</span>
           </label>
+        </fieldset>
+      }
+
+      @if (options().activeMode === 'handwriting' && options().handwritingTarget === 'word') {
+        <fieldset class="space-y-2">
+          <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
+            Parole da scrivere:
+          </legend>
+          @for (category of wordCategories; track category.value) {
+            <label
+              class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
+            >
+              <input
+                type="radio"
+                name="word-category"
+                class="w-5 h-5 accent-(--color-primary)"
+                [checked]="options().wordCategory === category.value"
+                (change)="setWordCategory(category.value)"
+              />
+              <span class="text-sm text-(--color-text-primary)">{{ category.label }}</span>
+            </label>
+          }
+          <fieldset class="mt-3 space-y-2">
+            <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
+              Lunghezza:
+            </legend>
+            <div class="grid grid-cols-2 gap-2">
+              @for (length of wordLengths; track length.value) {
+                <label
+                  class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
+                >
+                  <input
+                    type="radio"
+                    name="word-length"
+                    class="w-5 h-5 accent-(--color-primary)"
+                    [checked]="options().wordLength === length.value"
+                    [disabled]="!isWordLengthAvailable(length.value)"
+                    (change)="setWordLength(length.value)"
+                  />
+                  <span class="text-sm text-(--color-text-primary)">{{ length.label }}</span>
+                </label>
+              }
+            </div>
+          </fieldset>
+          <p class="text-xs text-(--color-text-secondary)">
+            Parole brevi, fino a 8 lettere, per stare nel riquadro.
+          </p>
         </fieldset>
       }
 
@@ -202,7 +291,11 @@ const MODE_OPTIONS: ModeOption[] = [
       }
 
       <!-- Opzioni visualizzazione -->
-      @if (options().activeMode !== 'letter' && options().activeMode !== 'handwriting') {
+      @if (
+        options().activeMode !== 'letter' &&
+        options().activeMode !== 'handwriting' &&
+        options().activeMode !== 'handwriting'
+      ) {
         <div class="space-y-2">
           <fieldset>
             <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
@@ -306,6 +399,21 @@ export class SyllableOptionsControlComponent {
   readonly handwritingStyles: ReadonlyArray<{ value: Style; label: string }> = STYLES.map(
     (style) => ({ value: style, label: ITALIAN_STYLE_LABELS[style] }),
   );
+  readonly wordCategories: ReadonlyArray<{ value: WordCategory; label: string }> = [
+    { value: 'number', label: 'Numeri' },
+    { value: 'animal', label: 'Animali' },
+    { value: 'name', label: 'Nomi' },
+    { value: 'things', label: 'Oggetti' },
+  ];
+  readonly wordLengths: ReadonlyArray<{ value: WordLength; label: string }> = [
+    { value: 'any', label: 'Qualsiasi' },
+    { value: 3, label: '3 lettere' },
+    { value: 4, label: '4 lettere' },
+    { value: 5, label: '5 lettere' },
+    { value: 6, label: '6 lettere' },
+    { value: 7, label: '7 lettere' },
+    { value: 8, label: '8 lettere' },
+  ];
 
   toggleMobileMenu(): void {
     this.mobileMenuOpen.update((v) => !v);
@@ -341,6 +449,35 @@ export class SyllableOptionsControlComponent {
 
   setHandwritingStyle(handwritingStyle: Style): void {
     this.emit({ handwritingStyle });
+  }
+
+  setWordCategory(wordCategory: WordCategory): void {
+    const currentLength = this.options().wordLength;
+    this.emit({
+      wordCategory,
+      ...(this.isWordLengthAvailable(currentLength, wordCategory)
+        ? {}
+        : { wordLength: 'any' as const }),
+    });
+  }
+
+  setWordLength(wordLength: WordLength): void {
+    this.emit({ wordLength });
+  }
+
+  isWordLengthAvailable(length: WordLength, category = this.options().wordCategory): boolean {
+    if (length === 'any') return true;
+    const words: Record<WordCategory, readonly string[]> = {
+      number: NUMBERS,
+      animal: ANIMALS,
+      name: NAMES,
+      things: THINGS,
+    };
+    return words[category].some((word) => word.replaceAll(' ', '').length === length);
+  }
+
+  setHandwritingTarget(handwritingTarget: 'letter' | 'word'): void {
+    this.emit({ handwritingTarget });
   }
 
   toggleHandwritingMilestone(): void {

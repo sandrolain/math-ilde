@@ -41,7 +41,7 @@ const INK_COLOR = '#24566a';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="writing-card" aria-labelledby="writing-title">
-      <h2 id="writing-title">Scrivi questa lettera</h2>
+      <h2 id="writing-title">{{ isWord() ? 'Scrivi questa parola' : 'Scrivi questa lettera' }}</h2>
       <div class="writing-workspace">
         <div class="writing-controls" aria-label="Comandi scrittura">
           <div class="writing-controls__top">
@@ -75,7 +75,9 @@ const INK_COLOR = '#24566a';
               class="writing-card__model-preview"
               width="280"
               height="160"
-              [attr.aria-label]="'Modello della lettera ' + displayChar()"
+              [attr.aria-label]="
+                (isWord() ? 'Modello della parola ' : 'Modello della lettera ') + displayChar()
+              "
             ></canvas>
             <span class="sr-only">{{ displayChar() }}</span>
           </div>
@@ -86,7 +88,9 @@ const INK_COLOR = '#24566a';
               class="writing-canvas"
               width="640"
               height="400"
-              aria-label="Riquadro per scrivere la lettera a mano"
+              [attr.aria-label]="
+                isWord() ? 'Riquadro per scrivere la parola a mano' : 'Riquadro per scrivere la lettera a mano'
+              "
               (pointerdown)="onPointerDown($event)"
               (pointermove)="onPointerMove($event)"
               (pointerup)="onPointerUp($event)"
@@ -140,8 +144,8 @@ const INK_COLOR = '#24566a';
       }
       .writing-card__model-preview {
         display: block;
-        width: min(17.5rem, 100%);
-        height: 10rem;
+        width: min(25rem, 100%);
+        height: 12rem;
         border: 3px solid var(--color-primary);
         border-radius: 1.25rem;
         background: var(--color-info-surface, #eef7fb);
@@ -156,7 +160,7 @@ const INK_COLOR = '#24566a';
       }
       .writing-workspace {
         display: grid;
-        grid-template-columns: minmax(9rem, 12rem) minmax(0, 32rem);
+        grid-template-columns: minmax(11rem, 16rem) minmax(0, 46rem);
         align-items: center;
         justify-content: center;
         gap: clamp(1rem, 3vw, 2rem);
@@ -192,8 +196,8 @@ const INK_COLOR = '#24566a';
       .writing-canvas {
         display: block;
         width: 100%;
-        max-width: 32rem;
-        aspect-ratio: 8 / 5;
+        max-width: 46rem;
+        aspect-ratio: 10 / 5;
         border: 3px dashed var(--color-primary);
         border-radius: 0.85rem;
         background: #fff;
@@ -248,7 +252,7 @@ const INK_COLOR = '#24566a';
           width: 100%;
         }
         .writing-canvas {
-          max-width: 32rem;
+          max-width: 46rem;
         }
       }
     `,
@@ -280,6 +284,7 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
     const char = this.target();
     return this.writingStyle().endsWith('maiuscolo') ? char.toUpperCase() : char.toLowerCase();
   });
+  readonly isWord = computed(() => this.target().length > 1);
   readonly styleLabel = computed(() => ITALIAN_STYLE_LABELS[this.writingStyle()]);
   readonly isCursive = computed(() => this.writingStyle().startsWith('corsivo'));
 
@@ -294,6 +299,7 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
   } | null = null;
   private animationHandle: number | null = null;
   private resizeObserver?: ResizeObserver;
+  private wordModelShown = false;
 
   /**
    * Impedisce che il gesto di scrittura faccia scorrere la pagina su touch,
@@ -417,11 +423,13 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const outcome = this.calligrafo.verify(
-      { style: this.writingStyle(), char: this.target() },
-      strokes,
-      { sizeTolerance: this.sizeTolerance() },
-    );
+    const outcome = this.isWord()
+      ? this.verifyWord(strokes)
+      : this.calligrafo.verify(
+          { style: this.writingStyle(), char: this.target() },
+          strokes,
+          { sizeTolerance: this.sizeTolerance() },
+        );
 
     this.feedback.set({
       ok: outcome.ok,
@@ -436,6 +444,12 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
 
   /** Mostra il modello della lettera, con animazione opzionale. */
   showModel(animate = true): void {
+    if (this.isWord()) {
+      this.wordModelShown = true;
+      this.redraw();
+      this.redrawModelPreview();
+      return;
+    }
     const template = this.calligrafo.findTemplate(this.writingStyle(), this.target());
     if (!template) return;
     const box = bbox(template.strokes.flat());
@@ -481,6 +495,7 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
     this.drawing = false;
     this.feedback.set(null);
     this.ghost = null;
+    this.wordModelShown = false;
     if (this.animationHandle !== null) {
       cancelAnimationFrame(this.animationHandle);
       this.animationHandle = null;
@@ -528,7 +543,11 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
 
     const scale = rect.height / EM_VIEW_HEIGHT;
     this.drawGuides(context, rect.width, rect.height, scale);
-    if (this.ghost) this.drawGhost(context, rect.width, scale);
+    if (this.isWord()) {
+      if (this.wordModelShown) this.drawWordGhost(context, rect.width, scale);
+    } else if (this.ghost) {
+      this.drawGhost(context, rect.width, scale);
+    }
     this.drawStrokes(context, scale, this.strokes());
     if (this.current.length > 0) this.drawStrokes(context, scale, [this.current]);
   }
@@ -551,6 +570,10 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
     context.fillStyle = '#edf7fb';
     context.fillRect(0, 0, width, height);
 
+    if (this.isWord()) {
+      this.drawWordPreview(context, width, height);
+      return;
+    }
     const template = this.calligrafo.findTemplate(this.writingStyle(), this.target());
     if (!template) return;
     const points = template.strokes.flat();
@@ -568,6 +591,125 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
       },
       false,
     );
+  }
+
+  private drawWordPreview(
+    context: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+  ): void {
+    this.drawGuides(context, width, height, height / EM_VIEW_HEIGHT);
+    this.drawWordTemplates(context, width, height / EM_VIEW_HEIGHT, false);
+  }
+
+  private drawWordGhost(
+    context: CanvasRenderingContext2D,
+    width: number,
+    scale: number,
+  ): void {
+    this.drawWordTemplates(context, width, scale, true);
+  }
+
+  private drawWordTemplates(
+    context: CanvasRenderingContext2D,
+    width: number,
+    scale: number,
+    showStartMarkers: boolean,
+  ): void {
+    const templates = [...this.target()]
+      .map((char) => this.calligrafo.findTemplate(this.writingStyle(), char))
+      .filter((template): template is Template => template !== undefined);
+    if (templates.length === 0) return;
+    const gap = 5;
+    const widths = templates.map((template) => {
+      const bounds = bbox(template.strokes.flat());
+      return Math.max(1, bounds.maxX - bounds.minX);
+    });
+    const availableWidth = width / scale - gap * (templates.length - 1);
+    const horizontalScale = Math.min(1, availableWidth / widths.reduce((sum, value) => sum + value, 0));
+    const totalWidth =
+      widths.reduce((sum, value) => sum + value * horizontalScale, 0) +
+      gap * (templates.length - 1);
+    let cursor = (width / scale - totalWidth) / 2;
+    for (const [index, template] of templates.entries()) {
+      const points = template.strokes.flat();
+      if (points.length === 0) continue;
+      const bounds = bbox(points);
+      const centerX = (bounds.minX + bounds.maxX) / 2;
+      const scaledWidth = widths[index] * horizontalScale;
+      const slotCenter = cursor + scaledWidth / 2;
+      this.drawGhost(
+        context,
+        width,
+        scale,
+        {
+          template,
+          centerX,
+          progress: template.strokes.length,
+          offsetX: (slotCenter - width / (2 * scale)) * scale,
+          scaleX: horizontalScale,
+        },
+        showStartMarkers,
+      );
+      cursor += scaledWidth + gap;
+    }
+  }
+
+  private verifyWord(strokes: readonly Stroke[]) {
+    const letters = [...this.target()];
+    const rect = this.canvasRef?.nativeElement.getBoundingClientRect();
+    const scale = rect && rect.height > 0 ? rect.height / EM_VIEW_HEIGHT : 1;
+    const width = rect && scale > 0 ? rect.width / scale : 256;
+    const gap = 5;
+    const templates = letters.map((letter) =>
+      this.calligrafo.findTemplate(this.writingStyle(), letter),
+    );
+    const widths = templates.map((template) => {
+      if (!template) return 1;
+      const bounds = bbox(template.strokes.flat());
+      return Math.max(1, bounds.maxX - bounds.minX);
+    });
+    const availableWidth = width - gap * (letters.length - 1);
+    const horizontalScale = Math.min(
+      1,
+      availableWidth / widths.reduce((sum, value) => sum + value, 0),
+    );
+    const totalWidth =
+      widths.reduce((sum, value) => sum + value * horizontalScale, 0) +
+      gap * (letters.length - 1);
+    let cursor = (width - totalWidth) / 2;
+    const results = letters.map((letter, index) => {
+      const left = cursor;
+      const right = left + widths[index] * horizontalScale;
+      const letterStrokes = strokes
+        .filter((stroke) => {
+          const points = stroke.filter((point) => point.x >= left && point.x <= right);
+          return points.length >= Math.max(1, Math.ceil(stroke.length / 2));
+        })
+        .map((stroke) =>
+          stroke.map((point) => ({
+            ...point,
+            x: (point.x - left) / horizontalScale,
+          })),
+        );
+      cursor = right + gap;
+      return this.calligrafo.verify(
+        { style: this.writingStyle(), char: letter },
+        letterStrokes,
+        { sizeTolerance: this.sizeTolerance() },
+      );
+    });
+    const issues = results.flatMap((result) => result.issues);
+    return {
+      ok: results.every((result) => result.ok),
+      score: results.reduce((sum, result) => sum + result.score, 0) / results.length,
+      stars: results.every((result) => result.ok) ? (3 as const) : (1 as const),
+      shapeScore: results.reduce((sum, result) => sum + result.shapeScore, 0) / results.length,
+      sizeScore: null,
+      issues,
+      matched: null,
+      ranking: [],
+    };
   }
 
   private drawGuides(
@@ -639,7 +781,13 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
     context: CanvasRenderingContext2D,
     width: number,
     scale: number,
-    previewGhost: { template: Template; centerX: number; progress: number } | null = this.ghost,
+    previewGhost: {
+      template: Template;
+      centerX: number;
+      progress: number;
+      offsetX?: number;
+      scaleX?: number;
+    } | null = this.ghost,
     showStartMarkers = true,
   ): void {
     const ghost = previewGhost;
@@ -656,7 +804,10 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
     context.lineJoin = 'round';
 
     const project = (point: Point): Point => ({
-      x: (point.x - ghost.centerX) * scale + width / 2,
+      x:
+        (point.x - ghost.centerX) * scale * (ghost.scaleX ?? 1) +
+        width / 2 +
+        (ghost.offsetX ?? 0),
       y: (point.y + EM_TOP_MARGIN) * scale,
     });
 

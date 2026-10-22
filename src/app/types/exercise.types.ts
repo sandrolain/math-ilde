@@ -235,6 +235,8 @@ export type SyllableMode =
   | 'sentence';
 export type LetterStyle = 'print' | 'cursive';
 export type LetterFilter = 'all' | 'vowels' | 'consonants';
+export type WordCategory = 'number' | 'animal' | 'name' | 'things';
+export type WordLength = 'any' | 3 | 4 | 5 | 6 | 7 | 8;
 
 export interface SyllableOptions {
   section: 'syllables';
@@ -250,6 +252,9 @@ export interface SyllableOptions {
   handwritingStyle: HandwritingStyle;
   /** Se true, propone solo lettere non ancora superate nella scrittura. */
   handwritingMilestone: boolean;
+  handwritingTarget: 'letter' | 'word';
+  wordCategory: WordCategory;
+  wordLength: WordLength;
   activeMode: SyllableMode;
 }
 export type FeedbackType = 'success' | 'retry' | 'show-answer';
