@@ -252,6 +252,7 @@ export interface SyllableOptions {
   handwritingStyle: HandwritingStyle;
   /** Se true, propone solo lettere non ancora superate nella scrittura. */
   handwritingMilestone: boolean;
+  handwritingRelaxed: boolean;
   handwritingTarget: 'letter' | 'word';
   wordCategory: WordCategory;
   wordLength: WordLength;

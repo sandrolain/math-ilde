@@ -30,7 +30,7 @@ import {
   SENTENCES,
   ALPHABET,
 } from '../../data/syllable-data';
-import type { WordCategory } from '../../types/exercise.types';
+import type { WordCategory, WordLength } from '../../types/exercise.types';
 
 function randomItem<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -97,6 +97,8 @@ function generateSyllable(opts: SyllableOptions): string {
                 options().handwritingTarget === 'word' ? currentWord() : currentLetter()
               "
               [writingStyle]="options().handwritingStyle"
+              [sizeTolerance]="options().handwritingRelaxed ? 28 : 16"
+              [shapeThreshold]="options().handwritingRelaxed ? 0.35 : 0.5"
               [clearToken]="handwritingClear()"
               [feedbackInPopup]="true"
               (result)="onHandwritingResult($event)"
@@ -149,31 +151,60 @@ function generateSyllable(opts: SyllableOptions): string {
               <section class="handwriting-progress" aria-labelledby="handwriting-progress-title">
                 <div class="handwriting-progress__heading">
                   <h2 id="handwriting-progress-title">Il tuo traguardo</h2>
-                  <span class="handwriting-progress__count">
-                    {{ handwritingPassedCount() }}/{{ alphabet.length }}
-                  </span>
-                </div>
-                <p class="handwriting-progress__hint">
-                  Le lettere verdi sono già superate.
-                </p>
-                <div class="handwriting-progress__grid" role="list" aria-label="Progresso alfabeto">
-                  @for (letter of alphabet; track letter) {
-                    <span
-                      class="handwriting-progress__letter"
-                      [class.handwriting-progress__letter--passed]="isHandwritingLetterPassed(letter)"
-                      [attr.aria-label]="
-                        letter.toUpperCase() +
-                        (isHandwritingLetterPassed(letter) ? ': superata' : ': da esercitare')
-                      "
-                      role="listitem"
-                    >
-                      {{ letter.toUpperCase() }}
+                  @if (options().handwritingTarget === 'word') {
+                    <span class="handwriting-progress__count">
+                      {{ wordHandwritingPassed().length }}/{{ wordCandidates().length }}
+                    </span>
+                  } @else {
+                    <span class="handwriting-progress__count">
+                      {{ handwritingPassedCount() }}/{{ alphabet.length }}
                     </span>
                   }
                 </div>
-                @if (handwritingGoalComplete()) {
+                @if (options().handwritingTarget === 'word') {
+                  <p class="handwriting-progress__hint">
+                    Le parole verdi sono già superate.
+                  </p>
+                  <div class="handwriting-progress__grid" role="list" aria-label="Progresso parole">
+                    @for (word of wordCandidates(); track word) {
+                      <span
+                        class="handwriting-progress__letter"
+                        [class.handwriting-progress__letter--passed]="isHandwritingWordPassed(word)"
+                        [attr.aria-label]="
+                          word + (isHandwritingWordPassed(word) ? ': superata' : ': da esercitare')
+                        "
+                        role="listitem"
+                      >
+                        {{ word }}
+                      </span>
+                    }
+                  </div>
+                } @else {
+                  <p class="handwriting-progress__hint">
+                    Le lettere verdi sono già superate.
+                  </p>
+                  <div class="handwriting-progress__grid" role="list" aria-label="Progresso alfabeto">
+                    @for (letter of alphabet; track letter) {
+                      <span
+                        class="handwriting-progress__letter"
+                        [class.handwriting-progress__letter--passed]="isHandwritingLetterPassed(letter)"
+                        [attr.aria-label]="
+                          letter.toUpperCase() +
+                          (isHandwritingLetterPassed(letter) ? ': superata' : ': da esercitare')
+                        "
+                        role="listitem"
+                      >
+                        {{ letter.toUpperCase() }}
+                      </span>
+                    }
+                  </div>
+                }
+                @if (
+                  (options().handwritingTarget === 'word' && wordHandwritingGoalComplete()) ||
+                  (options().handwritingTarget === 'letter' && handwritingGoalComplete())
+                ) {
                   <p class="handwriting-progress__complete" role="status">
-                    Traguardo completato! Hai superato tutto l'alfabeto.
+                    Traguardo completato!
                   </p>
                 }
               </section>
@@ -372,6 +403,13 @@ export class SyllablesComponent implements OnInit {
   handwritingPassed = signal<string[]>(
     this.storageService.loadHandwritingProgress(this.options().handwritingStyle),
   );
+  wordHandwritingPassed = signal<string[]>(
+    this.storageService.loadWordHandwritingProgress(
+      this.options().handwritingStyle,
+      this.options().wordCategory,
+      this.options().wordLength,
+    ),
+  );
   handwritingFeedback = signal<{ type: FeedbackType; message: string } | null>(null);
   currentRawContent = signal<string | string[]>('ba');
   /** Incrementato a ogni "Nuova lettera" per azzerare l'area di scrittura. */
@@ -392,6 +430,25 @@ export class SyllablesComponent implements OnInit {
   });
   handwritingPassedCount = computed(() => this.handwritingPassed().length);
   handwritingGoalComplete = computed(() => this.handwritingPassedCount() === this.alphabet.length);
+  wordCandidates = computed(() => {
+    const words: Record<WordCategory, readonly string[]> = {
+      number: NUMBERS,
+      animal: ANIMALS,
+      name: NAMES,
+      things: THINGS,
+    };
+    const length = this.options().wordLength;
+    return words[this.options().wordCategory].filter(
+      (word) =>
+        word.replaceAll(' ', '').length <= 8 &&
+        (length === 'any' || word.replaceAll(' ', '').length === length),
+    );
+  });
+  wordHandwritingGoalComplete = computed(
+    () =>
+      this.wordCandidates().length > 0 &&
+      this.wordCandidates().every((word) => this.wordHandwritingPassed().includes(word)),
+  );
 
   syllabifiedContent = computed<string[][]>(() => {
     const raw = this.currentRawContent();
@@ -472,7 +529,12 @@ export class SyllablesComponent implements OnInit {
               (opts.wordLength === 'any' ||
                 word.replaceAll(' ', '').length === opts.wordLength),
           );
-          this.currentRawContent.set(randomItem(availableWords));
+          const passed = opts.handwritingMilestone ? new Set(this.wordHandwritingPassed()) : null;
+          const nextWords = passed
+            ? availableWords.filter((word) => !passed.has(word))
+            : availableWords;
+          if (nextWords.length === 0) return;
+          this.currentRawContent.set(randomItem(nextWords));
         } else {
           let letters =
             opts.letterFilter === 'vowels'
@@ -517,6 +579,10 @@ export class SyllablesComponent implements OnInit {
     return this.handwritingPassed().includes(letter);
   }
 
+  isHandwritingWordPassed(word: string): boolean {
+    return this.wordHandwritingPassed().includes(word);
+  }
+
   onHandwritingResult(result: boolean | null): void {
     if (result === null) return;
     const type: FeedbackType = result ? 'success' : 'retry';
@@ -525,6 +591,22 @@ export class SyllablesComponent implements OnInit {
       message: this.feedbackService.getMessage(type),
     });
     if (!result) return;
+    if (this.options().handwritingTarget === 'word') {
+      const word = this.currentWord().toLowerCase();
+      this.wordHandwritingPassed.update((passed) => {
+        if (passed.includes(word)) return passed;
+        const next = [...passed, word].sort();
+        const opts = this.options();
+        this.storageService.saveWordHandwritingProgress(
+          opts.handwritingStyle,
+          opts.wordCategory,
+          opts.wordLength,
+          next,
+        );
+        return next;
+      });
+      return;
+    }
     const letter = this.currentLetter().toLowerCase();
     if (!this.alphabet.includes(letter)) return;
     this.handwritingPassed.update((passed) => {
@@ -551,8 +633,18 @@ export class SyllablesComponent implements OnInit {
     ) {
       return;
     }
-    this.storageService.clearHandwritingProgress(this.options().handwritingStyle);
-    this.handwritingPassed.set([]);
+    const opts = this.options();
+    if (opts.handwritingTarget === 'word') {
+      this.storageService.clearWordHandwritingProgress(
+        opts.handwritingStyle,
+        opts.wordCategory,
+        opts.wordLength,
+      );
+      this.wordHandwritingPassed.set([]);
+    } else {
+      this.storageService.clearHandwritingProgress(opts.handwritingStyle);
+      this.handwritingPassed.set([]);
+    }
     this.handwritingFeedback.set(null);
     this.generateNext();
   }
@@ -560,11 +652,26 @@ export class SyllablesComponent implements OnInit {
   onOptionsChange(newOptions: SyllableOptions): void {
     const prevMode = this.options().activeMode;
     const previousStyle = this.options().handwritingStyle;
+    const previousCategory = this.options().wordCategory;
+    const previousLength = this.options().wordLength;
     this.options.set(newOptions);
     this.storageService.saveOptions(newOptions);
     if (newOptions.handwritingStyle !== previousStyle) {
       this.handwritingPassed.set(
         this.storageService.loadHandwritingProgress(newOptions.handwritingStyle),
+      );
+    }
+    if (
+      newOptions.handwritingStyle !== previousStyle ||
+      newOptions.wordCategory !== previousCategory ||
+      newOptions.wordLength !== previousLength
+    ) {
+      this.wordHandwritingPassed.set(
+        this.storageService.loadWordHandwritingProgress(
+          newOptions.handwritingStyle,
+          newOptions.wordCategory,
+          newOptions.wordLength,
+        ),
       );
     }
     // In modalità scrittura ogni modifica alle impostazioni laterali azzera

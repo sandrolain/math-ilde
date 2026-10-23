@@ -267,6 +267,7 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
   target = input.required<string>();
   writingStyle = input<Style>('stampatello-maiuscolo');
   sizeTolerance = input<number | null>(16);
+  shapeThreshold = input(0.5);
   feedbackInPopup = input(false);
   /** Cambiandone il valore il foglio e il modello vengono azzerati (es. "Nuova lettera"). */
   clearToken = input(0);
@@ -428,7 +429,7 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
       : this.calligrafo.verify(
           { style: this.writingStyle(), char: this.target() },
           strokes,
-          { sizeTolerance: this.sizeTolerance() },
+          { sizeTolerance: this.sizeTolerance(), shapeThreshold: this.shapeThreshold() },
         );
 
     this.feedback.set({
@@ -696,7 +697,7 @@ export class HandwritingCanvasComponent implements AfterViewInit, OnDestroy {
       return this.calligrafo.verify(
         { style: this.writingStyle(), char: letter },
         letterStrokes,
-        { sizeTolerance: this.sizeTolerance() },
+        { sizeTolerance: this.sizeTolerance(), shapeThreshold: this.shapeThreshold() },
       );
     });
     const issues = results.flatMap((result) => result.issues);

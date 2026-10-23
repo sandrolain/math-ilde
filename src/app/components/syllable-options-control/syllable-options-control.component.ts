@@ -55,12 +55,12 @@ const MODE_OPTIONS: ModeOption[] = [
     <!-- Sidebar -->
     <div
       id="syllable-options-sidebar"
-      class="fixed lg:relative inset-y-0 left-0 w-80 bg-white shadow-lg p-6 space-y-6 z-40 transition-transform duration-300 lg:translate-x-0 max-h-screen overflow-y-auto"
+      class="options-sidebar fixed lg:relative inset-y-0 left-0 w-80 bg-white shadow-lg p-4 space-y-3 z-40 transition-transform duration-300 lg:translate-x-0 max-h-screen overflow-y-auto"
       [class.translate-x-[-100%]]="!mobileMenuOpen()"
       role="region"
       aria-label="Opzioni sillabe"
     >
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex justify-between items-center mb-2">
         <h3 class="text-xl font-bold text-(--color-text-primary)">Opzioni</h3>
         <button
           (click)="toggleMobileMenu()"
@@ -77,17 +77,17 @@ const MODE_OPTIONS: ModeOption[] = [
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
             Modalità:
           </legend>
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-2 gap-1">
             @for (mode of modeOptions; track mode.value) {
               <button
-                class="flex flex-col items-center p-3 rounded-xl border-2 transition-all min-h-11 text-sm font-medium"
+                class="flex flex-col items-center p-2 rounded-xl border-2 transition-all min-h-10 text-sm font-medium"
                 [class.border-(--color-primary)]="options().activeMode === mode.value"
                 [class.bg-sky-50]="options().activeMode === mode.value"
                 [class.border-gray-200]="options().activeMode !== mode.value"
                 [attr.aria-pressed]="options().activeMode === mode.value"
                 (click)="setMode(mode.value)"
               >
-                <span aria-hidden="true" class="text-2xl mb-1">{{ mode.icon }}</span>
+                <span aria-hidden="true" class="text-xl mb-0">{{ mode.icon }}</span>
                 <span>{{ mode.label }}</span>
               </button>
             }
@@ -146,7 +146,7 @@ const MODE_OPTIONS: ModeOption[] = [
       @if (
         options().activeMode === 'handwriting'
       ) {
-        <fieldset class="space-y-2">
+        <fieldset class="space-y-2 choice-group choice-group--two">
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
             Cosa vuoi scrivere:
           </legend>
@@ -177,7 +177,7 @@ const MODE_OPTIONS: ModeOption[] = [
         options().activeMode === 'letter' ||
         (options().activeMode === 'handwriting' && options().handwritingTarget === 'letter')
       ) {
-        <fieldset class="space-y-2">
+        <fieldset class="space-y-2 choice-group choice-group--two">
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
             {{
               options().activeMode === 'letter' ? 'Lettere da mostrare:' : 'Lettere da esercitare:'
@@ -200,9 +200,7 @@ const MODE_OPTIONS: ModeOption[] = [
         </fieldset>
       }
 
-      @if (
-        options().activeMode === 'handwriting' && options().handwritingTarget === 'letter'
-      ) {
+      @if (options().activeMode === 'handwriting') {
         <fieldset class="space-y-2">
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
             Percorso:
@@ -218,6 +216,17 @@ const MODE_OPTIONS: ModeOption[] = [
             />
             <span class="text-sm text-(--color-text-primary)">Modalità traguardo</span>
           </label>
+          <label
+            class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer min-h-10"
+          >
+            <input
+              type="checkbox"
+              class="w-5 h-5 rounded accent-(--color-primary)"
+              [checked]="options().handwritingRelaxed"
+              (change)="toggleHandwritingRelaxed()"
+            />
+            <span class="text-sm text-(--color-text-primary)">Controllo più permissivo</span>
+          </label>
         </fieldset>
       }
 
@@ -226,25 +235,27 @@ const MODE_OPTIONS: ModeOption[] = [
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
             Parole da scrivere:
           </legend>
-          @for (category of wordCategories; track category.value) {
-            <label
-              class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
-            >
-              <input
-                type="radio"
-                name="word-category"
-                class="w-5 h-5 accent-(--color-primary)"
-                [checked]="options().wordCategory === category.value"
-                (change)="setWordCategory(category.value)"
-              />
-              <span class="text-sm text-(--color-text-primary)">{{ category.label }}</span>
-            </label>
-          }
+          <div class="choice-group choice-group--two">
+            @for (category of wordCategories; track category.value) {
+              <label
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
+              >
+                <input
+                  type="radio"
+                  name="word-category"
+                  class="w-5 h-5 accent-(--color-primary)"
+                  [checked]="options().wordCategory === category.value"
+                  (change)="setWordCategory(category.value)"
+                />
+                <span class="text-sm text-(--color-text-primary)">{{ category.label }}</span>
+              </label>
+            }
+          </div>
           <fieldset class="mt-3 space-y-2">
             <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
               Lunghezza:
             </legend>
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-2 gap-1 choice-group choice-group--length">
               @for (length of wordLengths; track length.value) {
                 <label
                   class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer min-h-11"
@@ -269,7 +280,7 @@ const MODE_OPTIONS: ModeOption[] = [
       }
 
       @if (options().activeMode === 'handwriting') {
-        <fieldset class="space-y-2">
+        <fieldset class="space-y-2 choice-group">
           <legend class="block text-sm font-semibold text-(--color-text-primary) mb-2">
             Stile di scrittura:
           </legend>
@@ -382,6 +393,111 @@ const MODE_OPTIONS: ModeOption[] = [
       :host {
         display: block;
       }
+      .options-sidebar {
+        font-size: 0.95rem;
+      }
+      .options-sidebar fieldset {
+        margin: 0;
+        border: 0;
+        padding: 0;
+      }
+      .options-sidebar label {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        min-height: 2.5rem;
+        padding: 0.5rem;
+        border: 1px solid var(--color-border);
+        border-radius: 0.65rem;
+        background: var(--color-background);
+      }
+      .options-sidebar .space-y-2 {
+        row-gap: 0.35rem;
+      }
+      .options-sidebar .choice-group {
+        display: grid;
+        gap: 0.3rem;
+      }
+      .options-sidebar .choice-group--two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .options-sidebar .choice-group--length {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+      .options-sidebar .choice-group label {
+        position: relative;
+        justify-content: center;
+        box-sizing: border-box;
+        height: 2.5rem;
+        min-height: 2.5rem;
+        padding: 0.4rem;
+        text-align: center;
+      }
+      .options-sidebar .choice-group label:has(input:checked) {
+        border: 2px solid var(--color-primary-strong);
+        background: var(--color-primary-strong);
+        color: white;
+        font-weight: 700;
+        box-shadow: 0 2px 0 var(--color-primary);
+      }
+      .options-sidebar .choice-group label:has(input:checked) span {
+        color: white !important;
+      }
+      .options-sidebar .choice-group input[type='radio'] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+      }
+      .options-sidebar label:has(input[type='checkbox']) {
+        position: relative;
+        cursor: pointer;
+      }
+      .options-sidebar label:has(input[type='checkbox'])::before {
+        display: grid;
+        flex: 0 0 1.25rem;
+        width: 1.25rem;
+        height: 1.25rem;
+        place-items: center;
+        border: 2px solid var(--color-border);
+        border-radius: 0.35rem;
+        color: transparent;
+        content: '✓';
+        font-size: 0.85rem;
+        font-weight: 900;
+        line-height: 1;
+      }
+      .options-sidebar label:has(input[type='checkbox']:checked) {
+        border: 2px solid var(--color-primary-strong);
+        background: var(--color-primary-strong);
+        color: white;
+        font-weight: 700;
+        box-shadow: 0 2px 0 var(--color-primary);
+      }
+      .options-sidebar label:has(input[type='checkbox']:checked) span {
+        color: white !important;
+      }
+      .options-sidebar label:has(input[type='checkbox']:checked)::before {
+        border-color: var(--color-primary);
+        background: var(--color-primary);
+        color: white;
+      }
+      .options-sidebar input[type='checkbox'] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+      }
+      .options-sidebar .choice-group input[type='radio']:focus-visible + span {
+        outline: 3px solid var(--color-primary);
+        outline-offset: 2px;
+        border-radius: 0.3rem;
+      }
+      .options-sidebar input[type='checkbox']:focus-visible + span {
+        outline: 3px solid var(--color-primary);
+        outline-offset: 2px;
+        border-radius: 0.3rem;
+      }
     `,
   ],
 })
@@ -482,6 +598,10 @@ export class SyllableOptionsControlComponent {
 
   toggleHandwritingMilestone(): void {
     this.emit({ handwritingMilestone: !this.options().handwritingMilestone });
+  }
+
+  toggleHandwritingRelaxed(): void {
+    this.emit({ handwritingRelaxed: !this.options().handwritingRelaxed });
   }
 
   toggleShowUppercase(): void {
